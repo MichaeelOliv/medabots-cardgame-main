@@ -1,0 +1,1066 @@
+/* ==========================================================================
+   MEDABOTS ROBOTTLE CARD GAME - CYBERPUNK STYLESHEET
+   ========================================================================== */
+
+:root {
+    --bg-dark: #070913;
+    --bg-panel: #0f172a;
+    --bg-card: #151d32;
+    --bg-card-hover: #1c2744;
+    --bg-controls: #0b1120;
+    
+    --border-subtle: #23324d;
+    --border-bright: #38bdf8;
+    
+    --neon-gold: #facc15;
+    --neon-gold-glow: rgba(250, 204, 21, 0.45);
+    
+    --neon-cyan: #38bdf8;
+    --neon-cyan-glow: rgba(56, 189, 248, 0.45);
+    
+    --neon-red: #ef4444;
+    --neon-red-glow: rgba(239, 68, 68, 0.45);
+    
+    --neon-purple: #a855f7;
+    --neon-purple-glow: rgba(168, 85, 247, 0.45);
+    
+    --neon-green: #22c55e;
+    
+    --text-main: #f1f5f9;
+    --text-muted: #94a3b8;
+    --text-dim: #64748b;
+    
+    --font-heading: 'Orbitron', 'Segoe UI', sans-serif;
+    --font-ui: 'Rajdhani', 'Segoe UI', sans-serif;
+    --font-body: 'Space Grotesk', system-ui, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-ui);
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 50% 100%, rgba(168, 85, 247, 0.1) 0%, transparent 60%),
+        linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
+    color: var(--text-main);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px 14px 24px;
+    overflow-x: hidden;
+    position: relative;
+}
+
+/* Subtle CRT Scanlines */
+.cyber-scanlines {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.22) 50%);
+    background-size: 100% 4px;
+    z-index: 999;
+    opacity: 0.4;
+}
+
+/* ==========================================================================
+   HEADER & TOP BAR
+   ========================================================================== */
+
+.game-header {
+    width: 100%;
+    max-width: 1100px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.system-tag {
+    font-size: 0.72rem;
+    letter-spacing: 2px;
+    color: var(--neon-cyan);
+    font-family: var(--font-heading);
+    background: rgba(56, 189, 248, 0.1);
+    padding: 3px 8px;
+    border-radius: 4px;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.game-title {
+    font-family: var(--font-heading);
+    font-size: 1.45rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 16px rgba(250, 204, 21, 0.5);
+}
+
+.game-title .highlight {
+    color: var(--neon-gold);
+}
+
+.icon-btn {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-main);
+    font-size: 1.1rem;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.icon-btn:hover {
+    border-color: var(--neon-cyan);
+    transform: scale(1.05);
+    box-shadow: 0 0 10px var(--neon-cyan-glow);
+}
+
+/* ==========================================================================
+   TURN INDICATOR & STATUS RIBBON
+   ========================================================================== */
+
+.status-ribbon {
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: center;
+}
+
+.turn-indicator {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 20px;
+    border-radius: 30px;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.turn-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-dim);
+}
+
+.turn-indicator.player {
+    color: var(--neon-cyan);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 15px var(--neon-cyan-glow);
+}
+
+.turn-indicator.player .turn-dot {
+    background: var(--neon-cyan);
+    box-shadow: 0 0 8px var(--neon-cyan);
+    animation: pulseDot 1.2s infinite;
+}
+
+.turn-indicator.enemy {
+    color: var(--neon-red);
+    border-color: var(--neon-red);
+    box-shadow: 0 0 15px var(--neon-red-glow);
+}
+
+.turn-indicator.enemy .turn-dot {
+    background: var(--neon-red);
+    box-shadow: 0 0 8px var(--neon-red);
+    animation: pulseDot 1.2s infinite;
+}
+
+@keyframes pulseDot {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.5; }
+}
+
+/* ==========================================================================
+   MAIN ARENA LAYOUT
+   ========================================================================== */
+
+.arena {
+    display: grid;
+    grid-template-columns: 1fr 340px 1fr;
+    gap: 16px;
+    width: 100%;
+    max-width: 1160px;
+    align-items: start;
+}
+
+.side-container {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.player-side {
+    border-top: 3px solid var(--neon-cyan);
+}
+
+.enemy-side {
+    border-top: 3px solid var(--neon-red);
+}
+
+.section-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.player-badge {
+    color: var(--neon-cyan);
+}
+
+.enemy-badge {
+    color: var(--neon-red);
+}
+
+.side-name {
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+}
+
+.dodge-stat {
+    font-size: 0.78rem;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.15);
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+/* ==========================================================================
+   MEDAFORCE SPECIAL GAUGE
+   ========================================================================== */
+
+.medaforce-bar-container {
+    background: rgba(0, 0, 0, 0.4);
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border-subtle);
+}
+
+.medaforce-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+    color: var(--neon-gold);
+}
+
+.medaforce-track {
+    width: 100%;
+    height: 8px;
+    background: #090e1a;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(250, 204, 21, 0.2);
+}
+
+.medaforce-fill {
+    height: 100%;
+    width: 0%;
+    transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.player-fill {
+    background: linear-gradient(90deg, #f59e0b, #facc15, #fef08a);
+    box-shadow: 0 0 10px var(--neon-gold-glow);
+}
+
+.enemy-fill {
+    background: linear-gradient(90deg, #b91c1c, #ef4444, #fca5a5);
+    box-shadow: 0 0 10px var(--neon-red-glow);
+}
+
+.medaforce-fill.charged {
+    animation: chargeGlow 1s infinite alternate;
+}
+
+@keyframes chargeGlow {
+    0% { filter: brightness(1); }
+    100% { filter: brightness(1.5) drop-shadow(0 0 8px #facc15); }
+}
+
+/* ==========================================================================
+   MEDABOT 3X3 GRID & CARDS
+   ========================================================================== */
+
+.medabot-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 110px);
+    gap: 8px;
+    background: rgba(6, 9, 18, 0.75);
+    padding: 10px;
+    border-radius: 12px;
+    border: 1px solid var(--border-subtle);
+    justify-items: center;
+    align-items: center;
+}
+
+.slot-head { grid-column: 2; grid-row: 1; }
+.slot-left { grid-column: 1; grid-row: 2; }
+.slot-medal { grid-column: 2; grid-row: 2; }
+.slot-right { grid-column: 3; grid-row: 2; }
+.slot-legs { grid-column: 2; grid-row: 3; }
+
+.card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-subtle);
+    border-radius: 10px;
+    width: 100%;
+    height: 100%;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-slot-name {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.card-uses-badge {
+    font-size: 0.65rem;
+    color: var(--neon-gold);
+    background: rgba(250, 204, 21, 0.15);
+    padding: 1px 4px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.part-image {
+    width: 100%;
+    height: 44px;
+    object-fit: contain;
+    display: block;
+    margin: 2px 0;
+    transition: transform 0.2s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.card-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.stat-atk {
+    color: var(--neon-gold);
+}
+
+.stat-sup {
+    color: var(--neon-cyan);
+}
+
+.hp-container {
+    width: 100%;
+    background: #090d16;
+    height: 6px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-top: 3px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hp-bar {
+    height: 100%;
+    transition: width 0.35s ease;
+}
+
+.hp-text {
+    font-size: 0.64rem;
+    font-weight: 700;
+    color: var(--text-main);
+    text-align: right;
+    letter-spacing: 0.5px;
+}
+
+/* Card Hover & Interactive States */
+.card:hover:not(.destroyed):not(.disabled) {
+    transform: translateY(-4px) scale(1.02);
+    border-color: var(--neon-gold);
+    box-shadow: 0 6px 16px var(--neon-gold-glow);
+    background: var(--bg-card-hover);
+}
+
+.card.selected-attacker {
+    border-color: var(--neon-cyan) !important;
+    box-shadow: 0 0 16px var(--neon-cyan), inset 0 0 8px var(--neon-cyan-glow);
+    animation: attackerPulse 1s infinite alternate;
+}
+
+@keyframes attackerPulse {
+    0% { transform: scale(1.02); border-color: #38bdf8; }
+    100% { transform: scale(1.05); border-color: #7dd3fc; }
+}
+
+.card.selected-target {
+    border-color: var(--neon-red) !important;
+    box-shadow: 0 0 16px var(--neon-red), inset 0 0 8px var(--neon-red-glow);
+    animation: targetPulse 1s infinite alternate;
+}
+
+@keyframes targetPulse {
+    0% { transform: scale(1.02); border-color: #ef4444; }
+    100% { transform: scale(1.05); border-color: #f87171; }
+}
+
+.card.destroyed {
+    background: #090d15;
+    border-color: #1e293b;
+    opacity: 0.35;
+    cursor: not-allowed;
+    filter: grayscale(0.85);
+}
+
+.card.destroyed::after {
+    content: 'DESTRUÍDO';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(-25deg);
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 900;
+    color: #ef4444;
+    letter-spacing: 1px;
+    text-shadow: 0 0 6px #000;
+    border: 1px solid #ef4444;
+    padding: 2px 4px;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+}
+
+.card.disabled {
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+/* Medal Card Slot */
+.medal-card {
+    border-radius: 50%;
+    width: 84px;
+    height: 84px;
+    background: radial-gradient(circle, #78350f 0%, #172554 80%, #030712 100%);
+    border: 2px solid var(--neon-gold);
+    box-shadow: 0 0 12px var(--neon-gold-glow);
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+    padding: 4px;
+}
+
+.medal-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+    display: block;
+}
+
+.medal-card.charged {
+    border-color: #fef08a;
+    box-shadow: 0 0 22px #facc15, inset 0 0 12px #facc15;
+    animation: medalChargePulse 1.2s infinite;
+}
+
+@keyframes medalChargePulse {
+    0%, 100% { transform: scale(1); filter: drop-shadow(0 0 6px #facc15); }
+    50% { transform: scale(1.08); filter: drop-shadow(0 0 16px #facc15); }
+}
+
+/* Damage and Shake Animations */
+@keyframes shakeEffect {
+    0% { transform: translate(0, 0); }
+    15% { transform: translate(-6px, 3px); }
+    30% { transform: translate(6px, -3px); }
+    45% { transform: translate(-4px, -2px); }
+    60% { transform: translate(4px, 2px); }
+    75% { transform: translate(-2px, 1px); }
+    100% { transform: translate(0, 0); }
+}
+
+.card.shake {
+    animation: shakeEffect 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    border-color: var(--neon-red) !important;
+}
+
+.floating-dmg {
+    position: absolute;
+    top: 30%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ef4444;
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 900;
+    text-shadow: 0 0 8px #000, 0 0 14px #ef4444;
+    pointer-events: none;
+    z-index: 10;
+    animation: floatUp 0.85s ease-out forwards;
+}
+
+.floating-dmg.crit {
+    color: var(--neon-gold);
+    font-size: 1.6rem;
+    text-shadow: 0 0 10px #000, 0 0 20px #facc15;
+}
+
+.floating-dmg.dodge {
+    color: #38bdf8;
+    font-size: 1.15rem;
+    text-shadow: 0 0 8px #000, 0 0 12px #38bdf8;
+}
+
+@keyframes floatUp {
+    0% { opacity: 1; transform: translate(-50%, 0) scale(1.1); }
+    40% { transform: translate(-50%, -18px) scale(1.2); }
+    100% { opacity: 0; transform: translate(-50%, -38px) scale(0.9); }
+}
+
+/* ==========================================================================
+   CENTER CONTROLS & BATTLE LOG
+   ========================================================================== */
+
+.controls {
+    background: var(--bg-controls);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+.log-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: var(--font-heading);
+    font-size: 0.74rem;
+    letter-spacing: 1.5px;
+    color: var(--neon-cyan);
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 4px;
+}
+
+.mini-btn {
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+    color: var(--text-dim);
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+}
+
+.mini-btn:hover {
+    color: var(--text-main);
+    border-color: var(--text-muted);
+}
+
+.log-stream {
+    height: 175px;
+    background: #04060b;
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    color: #cbd5e1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    line-height: 1.35;
+}
+
+.log-entry {
+    animation: fadeInLog 0.25s ease-out;
+}
+
+.log-entry.win { color: #4ade80; font-weight: 700; }
+.log-entry.lose { color: #f87171; font-weight: 700; }
+.log-entry.crit { color: #facc15; font-weight: 700; }
+.log-entry.special { color: #c084fc; font-weight: 700; }
+.log-entry.info { color: #94a3b8; }
+.log-entry.dodge { color: #38bdf8; }
+
+@keyframes fadeInLog {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.actions-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.special-actions, .main-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn {
+    flex: 1;
+    border: none;
+    padding: 12px 10px;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 0.82rem;
+    letter-spacing: 1px;
+    transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.btn-attack {
+    background: linear-gradient(135deg, #f59e0b, #eab308);
+    color: #000;
+    box-shadow: 0 4px 12px rgba(234, 179, 8, 0.35);
+}
+
+.btn-attack:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(234, 179, 8, 0.55);
+}
+
+.btn-skill {
+    background: #0f766e;
+    color: #ccfbf1;
+    border: 1px solid #14b8a6;
+}
+
+.btn-skill:hover:not(:disabled) {
+    background: #115e59;
+    box-shadow: 0 0 12px rgba(20, 184, 166, 0.4);
+}
+
+.btn-medaforce {
+    background: linear-gradient(135deg, #7e22ce, #a855f7);
+    color: #fff;
+    border: 1px solid #c084fc;
+}
+
+.btn-medaforce:hover:not(:disabled) {
+    background: linear-gradient(135deg, #9333ea, #c084fc);
+    box-shadow: 0 0 16px var(--neon-purple-glow);
+    transform: translateY(-2px);
+}
+
+.btn-secondary {
+    background: #1e293b;
+    color: #e2e8f0;
+    border: 1px solid var(--border-subtle);
+}
+
+.btn-secondary:hover {
+    background: #334155;
+}
+
+.btn:disabled {
+    background: #1e293b !important;
+    color: #64748b !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+    transform: none !important;
+}
+
+.btn-large {
+    padding: 14px 28px;
+    font-size: 1rem;
+}
+
+/* ==========================================================================
+   SELECTION MODAL & ROSTER
+   ========================================================================== */
+
+.selection-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(3, 7, 18, 0.88);
+    backdrop-filter: blur(8px);
+}
+
+.selection-screen[hidden] {
+    display: none;
+}
+
+.selection-box {
+    width: min(740px, 100%);
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 22px;
+    background: var(--bg-panel);
+    border: 2px solid var(--border-bright);
+    border-radius: 16px;
+    box-shadow: 0 0 32px var(--neon-cyan-glow);
+}
+
+.selection-header {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.selection-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.4rem;
+    color: var(--neon-gold);
+    letter-spacing: 2px;
+    text-shadow: 0 0 10px var(--neon-gold-glow);
+}
+
+.selection-subtitle {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.config-section {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border-subtle);
+    margin-bottom: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.config-label {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-muted);
+}
+
+.difficulty-selector {
+    display: flex;
+    gap: 6px;
+}
+
+.diff-btn {
+    background: #1e293b;
+    color: var(--text-muted);
+    border: 1px solid var(--border-subtle);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 0.8rem;
+    transition: all 0.2s;
+}
+
+.diff-btn.active {
+    background: var(--neon-gold);
+    color: #000;
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 10px var(--neon-gold-glow);
+}
+
+.medabot-select-title {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    color: var(--neon-cyan);
+    letter-spacing: 1px;
+    margin-bottom: 10px;
+}
+
+.medabot-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 12px;
+}
+
+.medabot-option-card {
+    background: var(--bg-card);
+    border: 2px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 12px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    transition: all 0.25s ease;
+}
+
+.medabot-option-card:hover {
+    border-color: var(--neon-cyan);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 20px var(--neon-cyan-glow);
+    background: var(--bg-card-hover);
+}
+
+.roster-img-box {
+    width: 100%;
+    height: 90px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.roster-img {
+    height: 80px;
+    object-fit: contain;
+}
+
+.roster-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.roster-name {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.roster-role {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--neon-gold);
+    text-transform: uppercase;
+}
+
+.roster-stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    background: rgba(0, 0, 0, 0.25);
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.roster-mf-desc {
+    font-size: 0.7rem;
+    color: #c084fc;
+    line-height: 1.2;
+}
+
+/* ==========================================================================
+   WINNER / GAME OVER MODAL
+   ========================================================================== */
+
+.winner-alert {
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(3, 7, 18, 0.88);
+    backdrop-filter: blur(10px);
+}
+
+.winner-alert[hidden] {
+    display: none;
+}
+
+.winner-alert-box {
+    width: min(380px, 100%);
+    padding: 26px 22px;
+    text-align: center;
+    background: var(--bg-panel);
+    border: 2px solid var(--neon-gold);
+    border-radius: 16px;
+    box-shadow: 0 0 36px var(--neon-gold-glow);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    animation: zoomModal 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes zoomModal {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+}
+
+.winner-banner {
+    font-family: var(--font-heading);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: var(--neon-gold);
+}
+
+.winner-alert-title {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.winner-medal-wrapper {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 4px 0;
+}
+
+.winner-alert-medal {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--neon-gold);
+    position: relative;
+    z-index: 2;
+}
+
+.medal-glow {
+    position: absolute;
+    inset: -6px;
+    border-radius: 50%;
+    background: radial-gradient(circle, #facc15 0%, transparent 70%);
+    opacity: 0.6;
+    animation: medalChargePulse 1.5s infinite;
+}
+
+.winner-alert-message {
+    font-size: 0.95rem;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.battle-stats-summary {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    justify-content: space-around;
+}
+
+/* ==========================================================================
+   RESPONSIVE DESIGN (MOBILE & ANDROID WEBVIEW)
+   ========================================================================== */
+
+@media (max-width: 900px) {
+    .arena {
+        grid-template-columns: 1fr;
+        max-width: 480px;
+    }
+
+    .enemy-side { order: 1; }
+    .controls { order: 2; }
+    .player-side { order: 3; }
+
+    .game-title {
+        font-size: 1.25rem;
+    }
+
+    .medabot-grid {
+        grid-template-rows: repeat(3, 98px);
+    }
+}
+
+@media (max-width: 440px) {
+    body {
+        padding: 6px;
+    }
+
+    .medabot-grid {
+        grid-template-rows: repeat(3, 90px);
+        gap: 6px;
+        padding: 6px;
+    }
+
+    .part-image {
+        height: 36px;
+    }
+
+    .card {
+        padding: 4px;
+    }
+
+    .medal-card {
+        width: 70px;
+        height: 70px;
+    }
+
+    .special-actions, .main-actions {
+        flex-direction: column;
+    }
+}

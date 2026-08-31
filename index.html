@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Medabots Card Game - Simulador oficial de combate tático Robottle com Medaforce e peças customizáveis.">
+    <title>Medabots Robottle — Card Game Arena</title>
+    <!-- Google Fonts Sci-Fi & Modern UI -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="cyber-scanlines" aria-hidden="true"></div>
+
+    <!-- HEADER / TOP BAR -->
+    <header class="game-header">
+        <div class="header-left">
+            <span class="system-tag">MEDAWATCH OS v3.2</span>
+        </div>
+        <div class="header-center">
+            <h1 class="game-title">ROBOTTLE <span class="highlight">MEDABOTS</span></h1>
+        </div>
+        <div class="header-right">
+            <button id="sound-toggle-btn" class="icon-btn" title="Alternar Som" aria-label="Alternar Som">
+                <span id="sound-icon">🔊</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- INDICADOR DE TURNO -->
+    <div class="status-ribbon">
+        <div id="turn-indicator" class="turn-indicator player">
+            <span class="turn-dot"></span>
+            <span id="turn-text">Seu Turno</span>
+        </div>
+    </div>
+
+    <!-- MODAL DE SELEÇÃO DE MEDABOT -->
+    <div id="selection-screen" class="selection-screen" role="dialog" aria-modal="true" aria-labelledby="selection-title">
+        <div class="selection-box">
+            <div class="selection-header">
+                <h2 id="selection-title">CENTRAL DE ROBOTTLE</h2>
+                <p class="selection-subtitle">Configure o combate e escolha seu Medabot líder</p>
+            </div>
+
+            <div class="config-section">
+                <span class="config-label">Nível da Inteligência Artificial:</span>
+                <div class="difficulty-selector" role="radiogroup" aria-label="Dificuldade">
+                    <button class="diff-btn" data-diff="easy" role="radio" aria-checked="false">Iniciante</button>
+                    <button class="diff-btn active" data-diff="normal" role="radio" aria-checked="true">Normal</button>
+                    <button class="diff-btn" data-diff="hard" role="radio" aria-checked="false">Lendário (Hard)</button>
+                </div>
+            </div>
+
+            <div class="medabot-select-title">SELECIONE SEU MEDABOT</div>
+            <div class="medabot-options" id="medabot-roster-list">
+                <!-- Preenchido via JavaScript dinamicamente com atributos -->
+            </div>
+        </div>
+    </div>
+
+    <!-- ARENA PRINCIPAL DE COMBATE -->
+    <main class="arena" id="arena-container">
+        <!-- ÁREA DO OPONENTE -->
+        <section class="side-container enemy-side" aria-label="Campo Inimigo">
+            <div class="section-badge enemy-badge">
+                <span class="badge-icon">👾</span>
+                <span id="enemy-title" class="side-name">Inimigo</span>
+                <span class="dodge-stat" id="enemy-dodge-badge" title="Taxa de Esquiva">💨 15%</span>
+            </div>
+            
+            <div class="medaforce-bar-container" title="Barra de Medaforce Inimiga">
+                <div class="medaforce-label">
+                    <span>MEDAFORCE</span>
+                    <span id="enemy-mf-val">0%</span>
+                </div>
+                <div class="medaforce-track">
+                    <div id="enemy-mf-bar" class="medaforce-fill enemy-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="medabot-grid" id="enemy-grid" role="region" aria-label="Partes do Inimigo"></div>
+        </section>
+
+        <!-- CONTROLES CENTRAIS / LOG -->
+        <section class="controls" aria-label="Painel de Controle e Histórico">
+            <div class="log-header">
+                <span>TERMINAL DE COMBATE</span>
+                <button id="clear-log-btn" class="mini-btn" title="Limpar terminal">Limpar</button>
+            </div>
+            
+            <div id="log" class="log-stream" role="log" aria-live="polite"></div>
+
+            <div class="actions-panel">
+                <div class="special-actions">
+                    <button id="repair-btn" class="btn btn-skill" disabled title="Restaura até +22 de HP na peça mais danificada (1 uso por partida)">
+                        🛠️ Reparo de Emergência (1x)
+                    </button>
+                    <button id="medaforce-btn" class="btn btn-medaforce" disabled title="Requer 100% de Medaforce para ativar o ataque especial da Medalha!">
+                        ⚡ MEDAFORCE SPECIAL
+                    </button>
+                </div>
+                <div class="main-actions">
+                    <button id="attack-btn" class="btn btn-attack" disabled>
+                        ⚔️ ATACAR ALVO
+                    </button>
+                    <button id="reset-btn" class="btn btn-secondary">
+                        🔄 Novo Combate
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ÁREA DO JOGADOR -->
+        <section class="side-container player-side" aria-label="Campo do Jogador">
+            <div class="section-badge player-badge">
+                <span class="badge-icon">🤖</span>
+                <span id="player-title" class="side-name">Você</span>
+                <span class="dodge-stat" id="player-dodge-badge" title="Taxa de Esquiva">💨 18%</span>
+            </div>
+
+            <div class="medaforce-bar-container" title="Sua Barra de Medaforce">
+                <div class="medaforce-label">
+                    <span>MEDAFORCE</span>
+                    <span id="player-mf-val">0%</span>
+                </div>
+                <div class="medaforce-track">
+                    <div id="player-mf-bar" class="medaforce-fill player-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div class="medabot-grid" id="player-grid" role="region" aria-label="Suas Partes"></div>
+        </section>
+    </main>
+
+    <!-- MODAL DE VITÓRIA / DERROTA -->
+    <div id="winner-alert" class="winner-alert" hidden role="alertdialog" aria-modal="true" aria-labelledby="winner-alert-title">
+        <div class="winner-alert-box">
+            <div id="winner-banner" class="winner-banner">FIM DE COMBATE</div>
+            <div id="winner-alert-title" class="winner-alert-title">Vitória!</div>
+            <div class="winner-medal-wrapper">
+                <img id="winner-alert-medal" class="winner-alert-medal" src="assets/metabee partes/MedalhaMetabee.jpg" alt="Medalha do Vencedor">
+                <div class="medal-glow"></div>
+            </div>
+            <p id="winner-alert-message" class="winner-alert-message"></p>
+            <div id="winner-stats" class="battle-stats-summary"></div>
+            <button id="play-again-btn" class="btn btn-attack btn-large">Jogar Novamente</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

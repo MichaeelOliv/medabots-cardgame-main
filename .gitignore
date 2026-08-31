@@ -1,0 +1,24 @@
+# IDE / Editor
+.idea/
+.vscode/
+*.iml
+*.iws
+
+# Gradle & Android Build Outputs
+.gradle/
+.kotlin/
+build/
+android/.gradle/
+android/.kotlin/
+android/build/
+android/app/build/
+android/local.properties
+android/.cxx/
+android/.externalNativeBuild/
+android/captures/
+*.apk
+*.aab
+
+# OS files
+.DS_Store
+Thumbs.db
