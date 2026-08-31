@@ -19,6 +19,9 @@
     <!-- HEADER / TOP BAR -->
     <header class="game-header">
         <div class="header-left">
+            <button id="menu-nav-btn" class="menu-btn" title="Voltar ao Menu Principal" aria-label="Menu Principal">
+                <span>🏠</span> <span class="btn-text">MENU</span>
+            </button>
             <span class="system-tag">MEDAWATCH OS v3.2</span>
         </div>
         <div class="header-center">
@@ -32,16 +35,118 @@
     </header>
 
     <!-- INDICADOR DE TURNO -->
-    <div class="status-ribbon">
+    <div class="status-ribbon" id="status-ribbon">
         <div id="turn-indicator" class="turn-indicator player">
             <span class="turn-dot"></span>
             <span id="turn-text">Seu Turno</span>
         </div>
     </div>
 
+    <!-- TELA DO MENU PRINCIPAL (5 OPÇÕES) -->
+    <div id="main-menu-screen" class="main-menu-screen" role="dialog" aria-modal="true" aria-labelledby="main-menu-title">
+        <div class="main-menu-box">
+            <div class="main-menu-header">
+                <div class="main-menu-badge">CENTRAL DE COMANDO MEDABOTS</div>
+                <h2 id="main-menu-title" class="main-menu-title">ESCOLHA SEU <span class="highlight">DESTINO</span></h2>
+                <p class="main-menu-subtitle">Bem-vindo, Medafighter! Selecione um dos módulos para prosseguir na arena.</p>
+            </div>
+
+            <div class="menu-grid">
+                <!-- 1. Jogo Rápido (Disponível) -->
+                <div class="menu-card menu-card-highlight" id="btn-menu-quick-game" role="button" tabindex="0">
+                    <div class="menu-card-badge available">🟢 DISPONÍVEL AGORA</div>
+                    <div class="menu-card-icon-wrapper">
+                        <span class="menu-card-icon">⚔️</span>
+                    </div>
+                    <div class="menu-card-body">
+                        <h3 class="menu-card-title">Jogo Rápido</h3>
+                        <p class="menu-card-desc">Entre direto no combate Robottle contra IA tática sem necessidade de cadastro ou login.</p>
+                    </div>
+                    <div class="menu-card-action">
+                        <span class="menu-action-label">Jogar Batalha</span>
+                        <span class="menu-action-arrow">▶</span>
+                    </div>
+                </div>
+
+                <!-- 2. Login (Em Breve) -->
+                <div class="menu-card" id="btn-menu-login" role="button" tabindex="0">
+                    <div class="menu-card-badge coming-soon">🔒 EM BREVE</div>
+                    <div class="menu-card-icon-wrapper">
+                        <span class="menu-card-icon">👤</span>
+                    </div>
+                    <div class="menu-card-body">
+                        <h3 class="menu-card-title">Login & Perfil</h3>
+                        <p class="menu-card-desc">Sincronize seu histórico na nuvem, títulos de Medafighter, insígnias e estatísticas completas.</p>
+                    </div>
+                    <div class="menu-card-action">
+                        <span class="menu-action-label">Ver Detalhes</span>
+                        <span class="menu-action-arrow">→</span>
+                    </div>
+                </div>
+
+                <!-- 3. Edição de Medabot (Em Breve) -->
+                <div class="menu-card" id="btn-menu-customize" role="button" tabindex="0">
+                    <div class="menu-card-badge coming-soon">🔧 EM BREVE</div>
+                    <div class="menu-card-icon-wrapper">
+                        <span class="menu-card-icon">🦾</span>
+                    </div>
+                    <div class="menu-card-body">
+                        <h3 class="menu-card-title">Edição de Medabot</h3>
+                        <p class="menu-card-desc">Oficina para customizar cabeças, braços e pernas, combinando peças e criando robôs híbridos.</p>
+                    </div>
+                    <div class="menu-card-action">
+                        <span class="menu-action-label">Ver Oficina</span>
+                        <span class="menu-action-arrow">→</span>
+                    </div>
+                </div>
+
+                <!-- 4. Compra de Peças (Em Breve) -->
+                <div class="menu-card" id="btn-menu-shop" role="button" tabindex="0">
+                    <div class="menu-card-badge coming-soon">💎 EM BREVE</div>
+                    <div class="menu-card-icon-wrapper">
+                        <span class="menu-card-icon">🛒</span>
+                    </div>
+                    <div class="menu-card-body">
+                        <h3 class="menu-card-title">Compra de Peças</h3>
+                        <p class="menu-card-desc">Adquira peças raras, boosters de expansão, medalhas lendárias e visuais com Medacoins.</p>
+                    </div>
+                    <div class="menu-card-action">
+                        <span class="menu-action-label">Ver Cyber Loja</span>
+                        <span class="menu-action-arrow">→</span>
+                    </div>
+                </div>
+
+                <!-- 5. Campeonato Online (Em Breve) -->
+                <div class="menu-card menu-card-wide" id="btn-menu-tournament" role="button" tabindex="0">
+                    <div class="menu-card-badge coming-soon">🌐 EM BREVE</div>
+                    <div class="menu-card-icon-wrapper">
+                        <span class="menu-card-icon">🏆</span>
+                    </div>
+                    <div class="menu-card-body">
+                        <h3 class="menu-card-title">Campeonato Online</h3>
+                        <p class="menu-card-desc">Dispute torneios ranqueados em tempo real contra jogadores do mundo todo e alcance o Hall da Fama.</p>
+                    </div>
+                    <div class="menu-card-action">
+                        <span class="menu-action-label">Ver Torneios</span>
+                        <span class="menu-action-arrow">→</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="main-menu-footer">
+                <span class="footer-tip">💡 <strong>Dica de Medafighter:</strong> O modo <em>Jogo Rápido</em> está 100% liberado para jogar offline e sem limites!</span>
+            </div>
+        </div>
+    </div>
+
     <!-- MODAL DE SELEÇÃO DE MEDABOT -->
-    <div id="selection-screen" class="selection-screen" role="dialog" aria-modal="true" aria-labelledby="selection-title">
+    <div id="selection-screen" class="selection-screen" hidden role="dialog" aria-modal="true" aria-labelledby="selection-title">
         <div class="selection-box">
+            <div class="selection-top-bar">
+                <button id="back-to-menu-btn" class="btn-back" title="Voltar ao Menu">
+                    ⬅ Voltar ao Menu
+                </button>
+            </div>
             <div class="selection-header">
                 <h2 id="selection-title">CENTRAL DE ROBOTTLE</h2>
                 <p class="selection-subtitle">Configure o combate e escolha seu Medabot líder</p>
@@ -111,6 +216,9 @@
                     <button id="reset-btn" class="btn btn-secondary">
                         🔄 Novo Combate
                     </button>
+                    <button id="in-game-menu-btn" class="btn btn-secondary" title="Voltar para a Central de Módulos">
+                        🏠 Menu
+                    </button>
                 </div>
             </div>
         </section>
@@ -148,9 +256,43 @@
             </div>
             <p id="winner-alert-message" class="winner-alert-message"></p>
             <div id="winner-stats" class="battle-stats-summary"></div>
-            <button id="play-again-btn" class="btn btn-attack btn-large">Jogar Novamente</button>
+            <div class="winner-buttons-row">
+                <button id="play-again-btn" class="btn btn-attack btn-large">Jogar Novamente</button>
+                <button id="winner-menu-btn" class="btn btn-secondary btn-large">Menu Principal</button>
+            </div>
         </div>
     </div>
+
+    <!-- MODAL DE PRÉVIA DE FUNCIONALIDADE FUTURA (AMIGÁVEL) -->
+    <div id="feature-preview-modal" class="feature-modal" hidden role="dialog" aria-modal="true" aria-labelledby="feature-modal-title">
+        <div class="feature-modal-box">
+            <div class="feature-modal-header">
+                <div class="feature-badge-row">
+                    <span id="feature-modal-badge" class="feature-badge">EM DESENVOLVIMENTO</span>
+                    <span class="feature-version-tag">ROADMAP 2026</span>
+                </div>
+                <div class="feature-icon-circle" id="feature-modal-icon">✨</div>
+                <h2 id="feature-modal-title" class="feature-modal-title">Nome do Módulo</h2>
+                <p id="feature-modal-subtitle" class="feature-modal-subtitle">Subtítulo descritivo do módulo</p>
+            </div>
+
+            <div class="feature-modal-content" id="feature-modal-dynamic-body">
+                <!-- Conteúdo específico injetado dinamicamente via JS -->
+            </div>
+
+            <div class="feature-modal-footer">
+                <button id="feature-notify-btn" class="btn btn-feature-action">
+                    🔔 Quero Ser Avisado no Lançamento!
+                </button>
+                <button id="feature-close-btn" class="btn btn-secondary">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTAINER DE TOASTS NOTIFICAÇÕES -->
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
     <script src="script.js"></script>
 </body>

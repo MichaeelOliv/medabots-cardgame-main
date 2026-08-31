@@ -168,6 +168,29 @@ function playSound(type) {
                 subOsc.start(startTime);
                 subOsc.stop(startTime + 0.3);
             });
+        } else if (type === 'menuSelect') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, now);
+            osc.frequency.exponentialRampToValueAtTime(880, now + 0.08);
+            gain.gain.setValueAtTime(0.12, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+            osc.start(now);
+            osc.stop(now + 0.08);
+        } else if (type === 'chime') {
+            const chord = [587.33, 880, 1174.66];
+            chord.forEach((freq, i) => {
+                const subOsc = audioCtx.createOscillator();
+                const subGain = audioCtx.createGain();
+                subOsc.connect(subGain);
+                subGain.connect(audioCtx.destination);
+                subOsc.type = 'triangle';
+                const noteTime = now + (i * 0.05);
+                subOsc.frequency.setValueAtTime(freq, noteTime);
+                subGain.gain.setValueAtTime(0.1, noteTime);
+                subGain.gain.exponentialRampToValueAtTime(0.001, noteTime + 0.25);
+                subOsc.start(noteTime);
+                subOsc.stop(noteTime + 0.25);
+            });
         }
     } catch (e) {
         console.warn('Audio synthesis notice:', e);
@@ -446,6 +469,210 @@ function showWinnerAlert(winner, message) {
 function hideWinnerAlert() {
     const alert = document.getElementById('winner-alert');
     if (alert) alert.hidden = true;
+}
+
+// ==========================================================================
+// 4.1. SISTEMA DE NOTIFICAÇÕES (TOAST)
+// ==========================================================================
+function showToast(message, icon = '✨') {
+    const container = document.getElementById('toast-container');
+    if (!container) return;
+
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    playSound('chime');
+
+    setTimeout(() => {
+        toast.style.animation = 'toastSlideOut 0.3s ease-in forwards';
+        setTimeout(() => toast.remove(), 300);
+    }, 3500);
+}
+
+// ==========================================================================
+// 4.2. PRÉVIAS INTERATIVAS DAS FUNCIONALIDADES FUTURAS
+// ==========================================================================
+const FEATURE_PREVIEWS = {
+    'login': {
+        title: 'Login & Perfil de Medafighter',
+        subtitle: 'Sua identidade única na comunidade global de Robottle.',
+        badge: '🔒 EM BREVE',
+        icon: '👤',
+        html: `
+            <div class="feature-schematic-box">
+                <div>✨ <strong>Sincronização em Nuvem Multiplataforma</strong></div>
+                <div style="font-size: 0.76rem; color: var(--text-muted);">Jogue no Navegador do PC ou no Celular Android mantendo o mesmo progresso.</div>
+            </div>
+            <div class="feature-preview-grid">
+                <div class="feature-preview-item">
+                    <h4>☁️ Cloud Save</h4>
+                    <p>Salve suas medalhas, peças desbloqueadas e configurações favoritas na nuvem.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>🎖️ Patentes & Títulos</h4>
+                    <p>Evolua de "Iniciante de Robottle" até "Mestre Campeão Mundial".</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>📊 Estatísticas Detalhadas</h4>
+                    <p>Taxa de vitórias, maiores acertos críticos e histórico de oponentes derrotados.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>👥 Lista de Amigos</h4>
+                    <p>Adicione outros Medafighters para duelos diretos e troca de dicas.</p>
+                </div>
+            </div>
+        `
+    },
+    'customize': {
+        title: 'Oficina de Edição de Medabots',
+        subtitle: 'Monte seu robô ideal combinando peças de diferentes modelos!',
+        badge: '🔧 EM DESENVOLVIMENTO',
+        icon: '🦾',
+        html: `
+            <div class="feature-schematic-box">
+                <div>🛠️ <strong>Esquema de Montagem de Peças Híbridas</strong></div>
+                <div class="feature-mock-row">
+                    <span class="mock-slot">Cabeça (Metabee)</span>
+                    <span class="mock-slot">Braço Dir (Rokusho)</span>
+                    <span class="mock-slot">Pernas (Warbandit)</span>
+                </div>
+            </div>
+            <div class="feature-preview-grid">
+                <div class="feature-preview-item">
+                    <h4>⚡ Sinergia de Peças</h4>
+                    <p>Combine atributos ofensivos de tiro com lâminas velozes para criar estilos únicos.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>🎨 Customização Visual</h4>
+                    <p>Personalize paletas de cores, decalques cibernéticos e acabamento das partes.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>⚖️ Equilíbrio de Peso & Esquiva</h4>
+                    <p>Ajuste peças leves para máxima agilidade ou armaduras pesadas para resistir a K.O.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>💾 Salvar Predefinições</h4>
+                    <p>Crie e armazene até 5 builds diferentes de Medabots para alternar rapidamente.</p>
+                </div>
+            </div>
+        `
+    },
+    'shop': {
+        title: 'Cyber Market (Compra de Peças)',
+        subtitle: 'Adquira novos pacotes de expansão, peças raras e visuais cibernéticos.',
+        badge: '💎 EM DESENVOLVIMENTO',
+        icon: '🛒',
+        html: `
+            <div class="feature-schematic-box">
+                <div>💰 <strong>Moeda do Jogo: Medapoints (PTS)</strong></div>
+                <div style="font-size: 0.76rem; color: var(--neon-gold);">Ganhe Medapoints vencendo Robottles e completando desafios!</div>
+            </div>
+            <div class="feature-preview-grid">
+                <div class="feature-preview-item">
+                    <h4>📦 Boosters Temáticos</h4>
+                    <p>Pacotes temáticos Kabuto, Kuwagata, Anjo e Fera Selvagem com peças exclusivas.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>🌟 Peças Raras & Lendárias</h4>
+                    <p>Armas experimentais com efeitos adicionais de perfuração e paralisia.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>🎁 Ofertas Rotativas Diárias</h4>
+                    <p>Descontos diários em peças de suporte e medalhas especiais.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>🛡️ 100% Justo (Play-to-Earn)</h4>
+                    <p>Todas as peças poderão ser conquistadas jogando, sem barreiras de pay-to-win!</p>
+                </div>
+            </div>
+        `
+    },
+    'tournament': {
+        title: 'Campeonato Online & Modo Ranqueado',
+        subtitle: 'Desafie jogadores do mundo inteiro em combates PvP em tempo real.',
+        badge: '🌐 EM DESENVOLVIMENTO',
+        icon: '🏆',
+        html: `
+            <div class="feature-schematic-box">
+                <div>🥇 <strong>Ligas Competitivas Sazonais</strong></div>
+                <div class="feature-mock-row">
+                    <span class="mock-slot">🥉 Bronze</span>
+                    <span class="mock-slot">🥈 Prata</span>
+                    <span class="mock-slot">🥇 Ouro</span>
+                    <span class="mock-slot">💎 Mestre</span>
+                </div>
+            </div>
+            <div class="feature-preview-grid">
+                <div class="feature-preview-item">
+                    <h4>⚡ Matchmaking em Tempo Real</h4>
+                    <p>Pareamento rápido baseado em nível de habilidade e elo competitivo.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>🏆 Copas Semanais</h4>
+                    <p>Torneios eliminatórios aos finais de semana com troféus exclusivos.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>📜 Hall da Fama</h4>
+                    <p>Placar de líderes com os melhores Medafighters da temporada.</p>
+                </div>
+                <div class="feature-preview-item">
+                    <h4>👁️ Modo Espectador</h4>
+                    <p>Assista a finais de campeonato ao vivo e aprenda novas táticas.</p>
+                </div>
+            </div>
+        `
+    }
+};
+
+function showMainMenu() {
+    playSound('menuSelect');
+    const mainMenu = document.getElementById('main-menu-screen');
+    const selScreen = document.getElementById('selection-screen');
+    const featModal = document.getElementById('feature-preview-modal');
+    hideWinnerAlert();
+
+    if (mainMenu) mainMenu.hidden = false;
+    if (selScreen) selScreen.hidden = true;
+    if (featModal) featModal.hidden = true;
+}
+
+function hideMainMenu() {
+    const mainMenu = document.getElementById('main-menu-screen');
+    if (mainMenu) mainMenu.hidden = true;
+}
+
+function openQuickGame() {
+    playSound('menuSelect');
+    hideMainMenu();
+    showSelectionScreen();
+}
+
+function openFeaturePreview(featureKey) {
+    playSound('menuSelect');
+    const data = FEATURE_PREVIEWS[featureKey];
+    if (!data) return;
+
+    const modal = document.getElementById('feature-preview-modal');
+    const titleEl = document.getElementById('feature-modal-title');
+    const subtitleEl = document.getElementById('feature-modal-subtitle');
+    const badgeEl = document.getElementById('feature-modal-badge');
+    const iconEl = document.getElementById('feature-modal-icon');
+    const bodyEl = document.getElementById('feature-modal-dynamic-body');
+
+    if (titleEl) titleEl.textContent = data.title;
+    if (subtitleEl) subtitleEl.textContent = data.subtitle;
+    if (badgeEl) badgeEl.textContent = data.badge;
+    if (iconEl) iconEl.textContent = data.icon;
+    if (bodyEl) bodyEl.innerHTML = data.html;
+
+    if (modal) modal.hidden = false;
+}
+
+function closeFeaturePreview() {
+    playSound('click');
+    const modal = document.getElementById('feature-preview-modal');
+    if (modal) modal.hidden = true;
 }
 
 function showSelectionScreen() {
@@ -1013,15 +1240,84 @@ function enemyTurn() {
 // ==========================================================================
 function initGame() {
     hideWinnerAlert();
-    showSelectionScreen();
+    showMainMenu();
 }
 
+// Botões de Ação de Combate
 document.getElementById('attack-btn').addEventListener('click', handleAttack);
 document.getElementById('medaforce-btn').addEventListener('click', handleMedaforceSpecial);
 document.getElementById('repair-btn').addEventListener('click', handleRepair);
-document.getElementById('reset-btn').addEventListener('click', initGame);
-document.getElementById('play-again-btn').addEventListener('click', initGame);
+document.getElementById('reset-btn').addEventListener('click', () => {
+    hideWinnerAlert();
+    showSelectionScreen();
+});
+document.getElementById('play-again-btn').addEventListener('click', () => {
+    hideWinnerAlert();
+    showSelectionScreen();
+});
 
+// Botões de Navegação para o Menu Principal
+const menuNavBtn = document.getElementById('menu-nav-btn');
+if (menuNavBtn) {
+    menuNavBtn.addEventListener('click', showMainMenu);
+}
+
+const backToMenuBtn = document.getElementById('back-to-menu-btn');
+if (backToMenuBtn) {
+    backToMenuBtn.addEventListener('click', showMainMenu);
+}
+
+const inGameMenuBtn = document.getElementById('in-game-menu-btn');
+if (inGameMenuBtn) {
+    inGameMenuBtn.addEventListener('click', showMainMenu);
+}
+
+const winnerMenuBtn = document.getElementById('winner-menu-btn');
+if (winnerMenuBtn) {
+    winnerMenuBtn.addEventListener('click', showMainMenu);
+}
+
+// 5 Opções do Menu Principal
+const quickGameBtn = document.getElementById('btn-menu-quick-game');
+if (quickGameBtn) {
+    quickGameBtn.addEventListener('click', openQuickGame);
+}
+
+const loginBtn = document.getElementById('btn-menu-login');
+if (loginBtn) {
+    loginBtn.addEventListener('click', () => openFeaturePreview('login'));
+}
+
+const customizeBtn = document.getElementById('btn-menu-customize');
+if (customizeBtn) {
+    customizeBtn.addEventListener('click', () => openFeaturePreview('customize'));
+}
+
+const shopBtn = document.getElementById('btn-menu-shop');
+if (shopBtn) {
+    shopBtn.addEventListener('click', () => openFeaturePreview('shop'));
+}
+
+const tournamentBtn = document.getElementById('btn-menu-tournament');
+if (tournamentBtn) {
+    tournamentBtn.addEventListener('click', () => openFeaturePreview('tournament'));
+}
+
+// Modal de Prévia de Recursos Futuros
+const featureCloseBtn = document.getElementById('feature-close-btn');
+if (featureCloseBtn) {
+    featureCloseBtn.addEventListener('click', closeFeaturePreview);
+}
+
+const featureNotifyBtn = document.getElementById('feature-notify-btn');
+if (featureNotifyBtn) {
+    featureNotifyBtn.addEventListener('click', () => {
+        showToast('🎉 Seu interesse foi registrado com sucesso! Novidades em breve.', '🔔');
+        closeFeaturePreview();
+    });
+}
+
+// Terminal e Áudio
 const clearLogBtn = document.getElementById('clear-log-btn');
 if (clearLogBtn) {
     clearLogBtn.addEventListener('click', clearLog);
@@ -1032,6 +1328,7 @@ if (soundToggleBtn) {
     soundToggleBtn.addEventListener('click', toggleAudio);
 }
 
+// Seletor de Dificuldade da IA
 document.querySelectorAll('.diff-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
         document.querySelectorAll('.diff-btn').forEach(b => {
@@ -1045,5 +1342,5 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
     });
 });
 
-// Inicialização inicial
+// Inicialização da aplicação
 initGame();
