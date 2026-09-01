@@ -43,6 +43,11 @@
     -webkit-tap-highlight-color: transparent;
 }
 
+/* [MOBILE] Elimina delay de 300ms em iOS/Android em todos os elementos interativos */
+button, .card, .medabot-option-card, .menu-card, .diff-btn {
+    touch-action: manipulation;
+}
+
 body {
     background-color: var(--bg-dark);
     background-image: 
@@ -53,10 +58,13 @@ body {
     background-size: 100% 100%, 100% 100%, 32px 32px, 32px 32px;
     color: var(--text-main);
     min-height: 100vh;
+    min-height: 100dvh; /* [MOBILE] Dynamic viewport height — respeita barra de endereço mobile */
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 10px 14px 24px;
+    padding: 10px 14px calc(24px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(14px, env(safe-area-inset-left, 14px));
+    padding-right: max(14px, env(safe-area-inset-right, 14px));
     overflow-x: hidden;
     position: relative;
 }
@@ -459,12 +467,15 @@ body {
     letter-spacing: 0.5px;
 }
 
-/* Card Hover & Interactive States */
-.card:hover:not(.destroyed):not(.disabled) {
-    transform: translateY(-4px) scale(1.02);
-    border-color: var(--neon-gold);
-    box-shadow: 0 6px 16px var(--neon-gold-glow);
-    background: var(--bg-card-hover);
+/* [MOBILE] Hover states somente em dispositivos que suportam hover real (mouse)
+   Em touch screens, :hover fica "travado" após o toque — isso previne esse bug */
+@media (hover: hover) and (pointer: fine) {
+    .card:hover:not(.destroyed):not(.disabled) {
+        transform: translateY(-4px) scale(1.02);
+        border-color: var(--neon-gold);
+        box-shadow: 0 6px 16px var(--neon-gold-glow);
+        background: var(--bg-card-hover);
+    }
 }
 
 .card.selected-attacker {
@@ -693,6 +704,7 @@ body {
     flex: 1;
     border: none;
     padding: 12px 10px;
+    min-height: 48px; /* [MOBILE] Mínimo recomendado Google/Apple para área de toque */
     font-family: var(--font-heading);
     font-weight: 700;
     border-radius: 8px;
@@ -713,9 +725,45 @@ body {
     box-shadow: 0 4px 12px rgba(234, 179, 8, 0.35);
 }
 
-.btn-attack:hover:not(:disabled) {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 18px rgba(234, 179, 8, 0.55);
+/* [MOBILE] Hover de botões somente em dispositivos com mouse */
+@media (hover: hover) and (pointer: fine) {
+    .btn-attack:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 18px rgba(234, 179, 8, 0.55);
+    }
+
+    .btn-skill:hover:not(:disabled) {
+        background: #115e59;
+        box-shadow: 0 0 12px rgba(20, 184, 166, 0.4);
+    }
+
+    .btn-medaforce:hover:not(:disabled) {
+        background: linear-gradient(135deg, #9333ea, #c084fc);
+        box-shadow: 0 0 16px var(--neon-purple-glow);
+        transform: translateY(-2px);
+    }
+
+    .btn-secondary:hover {
+        background: #334155;
+    }
+
+    .menu-btn:hover {
+        background: linear-gradient(135deg, rgba(56, 189, 248, 0.35), rgba(168, 85, 247, 0.35));
+        box-shadow: 0 0 12px var(--neon-cyan-glow);
+        transform: translateY(-1px);
+    }
+
+    .icon-btn:hover {
+        border-color: var(--neon-cyan);
+        transform: scale(1.05);
+        box-shadow: 0 0 10px var(--neon-cyan-glow);
+    }
+}
+
+/* Active state para feedback visual imediato em touch */
+.btn:active:not(:disabled) {
+    transform: scale(0.97);
+    filter: brightness(0.92);
 }
 
 .btn-skill {
@@ -724,31 +772,16 @@ body {
     border: 1px solid #14b8a6;
 }
 
-.btn-skill:hover:not(:disabled) {
-    background: #115e59;
-    box-shadow: 0 0 12px rgba(20, 184, 166, 0.4);
-}
-
 .btn-medaforce {
     background: linear-gradient(135deg, #7e22ce, #a855f7);
     color: #fff;
     border: 1px solid #c084fc;
 }
 
-.btn-medaforce:hover:not(:disabled) {
-    background: linear-gradient(135deg, #9333ea, #c084fc);
-    box-shadow: 0 0 16px var(--neon-purple-glow);
-    transform: translateY(-2px);
-}
-
 .btn-secondary {
     background: #1e293b;
     color: #e2e8f0;
     border: 1px solid var(--border-subtle);
-}
-
-.btn-secondary:hover {
-    background: #334155;
 }
 
 .btn:disabled {
@@ -1543,6 +1576,9 @@ body {
    RESPONSIVE DESIGN (MOBILE & ANDROID WEBVIEW)
    ========================================================================== */
 
+/* ==========================================================================
+   RESPONSIVE — TABLET E MOBILE (max-width: 900px)
+   ========================================================================== */
 @media (max-width: 900px) {
     .menu-grid {
         grid-template-columns: 1fr;
@@ -1560,7 +1596,7 @@ body {
 
     .arena {
         grid-template-columns: 1fr;
-        max-width: 480px;
+        max-width: 100%; /* [MOBILE] Ocupa toda a largura disponível no tablet/mobile */
     }
 
     .enemy-side { order: 1; }
@@ -1572,53 +1608,244 @@ body {
     }
 
     .medabot-grid {
-        grid-template-rows: repeat(3, 98px);
+        grid-template-rows: repeat(3, 104px);
+    }
+
+    /* [MOBILE] Log menor em mobile para dar mais espaço ao tabuleiro */
+    .log-stream {
+        height: 130px;
+    }
+
+    /* [MOBILE] Modais com scroll para caber em telas baixas */
+    .winner-alert-box,
+    .selection-box,
+    .feature-modal-box {
+        max-height: 92dvh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
     }
 }
 
+/* ==========================================================================
+   RESPONSIVE — MOBILE PEQUENO (max-width: 480px)
+   ========================================================================== */
 @media (max-width: 480px) {
     body {
-        padding: 6px;
+        padding: 4px 6px calc(12px + env(safe-area-inset-bottom, 0px));
     }
 
     .header-left .system-tag {
         display: none;
     }
 
+    .game-title {
+        font-size: 1.1rem;
+        letter-spacing: 1.5px;
+    }
+
     .main-menu-title {
-        font-size: 1.35rem;
+        font-size: 1.25rem;
     }
 
     .main-menu-box {
-        padding: 18px 14px;
+        padding: 16px 12px;
+        gap: 12px;
     }
 
     .medabot-grid {
-        grid-template-rows: repeat(3, 90px);
-        gap: 6px;
+        grid-template-rows: repeat(3, 88px);
+        gap: 5px;
         padding: 6px;
     }
 
     .part-image {
-        height: 36px;
+        height: 32px;
     }
 
     .card {
-        padding: 4px;
+        padding: 4px 3px;
+    }
+
+    .card-slot-name {
+        font-size: 0.58rem;
+    }
+
+    .card-stat-row {
+        font-size: 0.64rem;
+    }
+
+    .hp-text {
+        font-size: 0.58rem;
     }
 
     .medal-card {
-        width: 70px;
-        height: 70px;
+        width: 66px;
+        height: 66px;
+    }
+
+    .btn {
+        font-size: 0.75rem;
+        padding: 10px 8px;
+        min-height: 48px;
     }
 
     .special-actions, .main-actions, .winner-buttons-row, .feature-modal-footer {
         flex-direction: column;
     }
 
-    .toast-container {
-        left: 14px;
-        right: 14px;
-        bottom: 14px;
+    .log-stream {
+        height: 110px;
+        font-size: 0.72rem;
     }
+
+    .toast-container {
+        left: 10px;
+        right: 10px;
+        bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* [MOBILE] Indicador de turno mais compacto */
+    .turn-indicator {
+        font-size: 0.72rem;
+        padding: 5px 14px;
+    }
+
+    /* [MOBILE] Seção de badge do Medabot mais compacta */
+    .section-badge {
+        padding: 5px 8px;
+        font-size: 0.82rem;
+    }
+}
+
+/* ==========================================================================
+   RESPONSIVE — MOBILE MUITO PEQUENO (max-width: 380px)
+   Cobre: Galaxy S8 (360px), iPhone SE 1ª geração (320px)
+   ========================================================================== */
+@media (max-width: 380px) {
+    .medabot-grid {
+        grid-template-rows: repeat(3, 78px);
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .part-image {
+        height: 26px;
+    }
+
+    .card {
+        padding: 3px 2px;
+    }
+
+    .card-slot-name, .card-uses-badge {
+        font-size: 0.52rem;
+    }
+
+    .card-stat-row, .hp-text {
+        font-size: 0.58rem;
+    }
+
+    .hp-container {
+        height: 4px;
+    }
+
+    .medal-card {
+        width: 56px;
+        height: 56px;
+    }
+
+    .medaforce-track {
+        height: 6px;
+    }
+
+    .medaforce-label {
+        font-size: 0.62rem;
+    }
+
+    .btn {
+        font-size: 0.68rem;
+        padding: 9px 6px;
+        letter-spacing: 0.5px;
+    }
+
+    .game-title {
+        font-size: 0.95rem;
+        letter-spacing: 1px;
+    }
+
+    .floating-dmg {
+        font-size: 1.1rem;
+    }
+
+    .floating-dmg.crit {
+        font-size: 1.3rem;
+    }
+}
+
+/* ==========================================================================
+   [UX 8] OVERLAY DE TURNO DO INIMIGO
+   ========================================================================== */
+.enemy-side {
+    position: relative;
+}
+
+.enemy-turn-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(7, 9, 19, 0.72);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    border-radius: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 20;
+    animation: overlayFadeIn 0.25s ease;
+    pointer-events: all;
+}
+
+.enemy-turn-overlay[hidden] {
+    display: none;
+}
+
+.overlay-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 20px 28px;
+    background: rgba(15, 23, 42, 0.9);
+    border: 1px solid var(--neon-red);
+    border-radius: 12px;
+    box-shadow: 0 0 24px rgba(239, 68, 68, 0.3);
+}
+
+.overlay-spinner {
+    font-size: 2rem;
+    animation: spinnerSpin 1.2s linear infinite;
+    display: inline-block;
+}
+
+.overlay-text {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--neon-red);
+    text-shadow: 0 0 8px var(--neon-red);
+    animation: overlayPulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes overlayFadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes spinnerSpin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+@keyframes overlayPulse {
+    from { opacity: 0.6; }
+    to   { opacity: 1; }
 }

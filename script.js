@@ -887,9 +887,9 @@ function handleAttack() {
 
     selectedAttacker = null;
     selectedTarget = null;
-    render();
 
     if (!gameOver) {
+        // [BUG 2] Verificação de K.O. por atacantes ANTES do render e da troca de turno
         if (getValidAttackers(enemy).length === 0) {
             gameOver = true;
             log('🏆 O Inimigo perdeu todas as peças ofensivas! Vitória por K.O.!', 'win');
@@ -898,10 +898,14 @@ function handleAttack() {
             return;
         }
 
+        // [UX 8] Overlay de turno do inimigo ativado antes do delay
         isPlayerTurn = false;
+        setEnemyTurnOverlay(true);
         render();
         log('Aguardando resposta do oponente...', 'info');
-        setTimeout(enemyTurn, 1000);
+        setTimeout(enemyTurn, 1100);
+    } else {
+        render();
     }
 }
 
@@ -1011,8 +1015,10 @@ function executeCombatTurn(attacker, target, sourceMedabot, targetMedabot, targe
     }
 
     // 2. Cálculo de Crítico e Dano
+    // [BALANCE 5] Variância escalada: ±12% do ATK base (mínimo ±1)
     const isCrit = Math.random() < (sourceMedabot.critBonus || 0.15);
-    const variance = Math.floor(Math.random() * 5) - 2; // -2 a +2
+    const varianceRange = Math.max(1, Math.round(attacker.atk * 0.12));
+    const variance = Math.floor(Math.random() * (varianceRange * 2 + 1)) - varianceRange;
     let baseDamage = attacker.atk + variance;
 
     // Penalidade se pernas do alvo estiverem destruídas (+20% dano)
@@ -1027,14 +1033,14 @@ function executeCombatTurn(attacker, target, sourceMedabot, targetMedabot, targe
 
     target.hp = Math.max(0, target.hp - finalDamage);
 
-    // Carregamento de Medaforce
+    // [BALANCE 4] Carga de Medaforce equalizada: +20 para quem ataca, +15 para quem recebe dano
     if (isPlayerAttacking) {
         playerMedaforce = Math.min(100, playerMedaforce + 20);
-        enemyMedaforce = Math.min(100, enemyMedaforce + 25);
+        enemyMedaforce = Math.min(100, enemyMedaforce + 15);
         battleStats.damageDealt += finalDamage;
     } else {
         enemyMedaforce = Math.min(100, enemyMedaforce + 20);
-        playerMedaforce = Math.min(100, playerMedaforce + 25);
+        playerMedaforce = Math.min(100, playerMedaforce + 15);
     }
 
     // Áudio
@@ -1070,6 +1076,7 @@ function executeCombatTurn(attacker, target, sourceMedabot, targetMedabot, targe
 function checkHeadDestruction(sourceMedabot, targetMedabot, target, isEnemyAttacking) {
     if (targetMedabot.parts.head.hp <= 0) {
         gameOver = true;
+        setEnemyTurnOverlay(false);
         if (!isEnemyAttacking) {
             log('🏆 CABEÇA DO INIMIGO DESTRUÍDA! VITÓRIA POR K.O. TOTAL!', 'win');
             showWinnerAlert(player, `${player.name} destruiu a cabeça de ${enemy.name} e venceu o Robottle!`);
@@ -1078,6 +1085,27 @@ function checkHeadDestruction(sourceMedabot, targetMedabot, target, isEnemyAttac
             showWinnerAlert(enemy, `${enemy.name} venceu o combate!`);
         }
     }
+}
+
+// [BUG 3] Verificação de empate — ambos sem atacantes
+function checkDrawCondition() {
+    const playerCanAttack = getValidAttackers(player).length > 0;
+    const enemyCanAttack = getValidAttackers(enemy).length > 0;
+    if (!playerCanAttack && !enemyCanAttack) {
+        gameOver = true;
+        setEnemyTurnOverlay(false);
+        log('⚖️ EMPATE! Ambos os Medabots perderam todas as peças ofensivas!', 'special');
+        // Mostra o alerta com o bot que tem mais HP total restante
+        const playerHp = Object.values(player.parts).filter(p => p.hp !== undefined).reduce((s, p) => s + p.hp, 0);
+        const enemyHp = Object.values(enemy.parts).filter(p => p.hp !== undefined).reduce((s, p) => s + p.hp, 0);
+        if (playerHp >= enemyHp) {
+            showWinnerAlert(player, `Empate por HP! ${player.name} sobreviveu com mais HP restante.`);
+        } else {
+            showWinnerAlert(enemy, `Empate por HP! ${enemy.name} sobreviveu com mais HP restante.`);
+        }
+        return true;
+    }
+    return false;
 }
 
 function showDamageVisual(gridId, targetKey, text, isCrit, isDodge) {
@@ -1103,29 +1131,56 @@ function showDamageVisual(gridId, targetKey, text, isCrit, isDodge) {
 }
 
 // ==========================================================================
+// 8.5. UX — OVERLAY DE TURNO DO INIMIGO
+// ==========================================================================
+function setEnemyTurnOverlay(visible) {
+    // [UX 8] Bloqueia visualmente o tabuleiro enquanto a IA processa
+    const overlay = document.getElementById('enemy-turn-overlay');
+    if (overlay) {
+        overlay.hidden = !visible;
+    }
+}
+
+// ==========================================================================
 // 9. INTELIGÊNCIA ARTIFICIAL (TURNO DO INIMIGO)
 // ==========================================================================
 function enemyTurn() {
-    if (gameOver) return;
+    if (gameOver) {
+        setEnemyTurnOverlay(false);
+        return;
+    }
     battleStats.turns++;
 
-    // 1. Reparo de Emergência da IA no modo Difícil/Normal
+    // [BALANCE 6] Reparo da IA considera cabeça E braços de ataque
     if ((gameDifficulty === 'hard' || gameDifficulty === 'normal') && !enemyRepairUsed) {
-        const enemyHead = enemy.parts.head;
-        if (enemyHead.hp > 0 && enemyHead.hp <= enemyHead.maxHp * 0.4) {
-            enemyHead.hp = Math.min(enemyHead.maxHp, enemyHead.hp + 22);
+        // Prioridade: cabeça (crítica ≤40%), depois braço mais danificado com ATK
+        const candidateParts = ['head', 'rightArm', 'leftArm'].map(k => enemy.parts[k]);
+        const urgentPart = candidateParts.find(p => {
+            if (p.hp <= 0) return false;
+            // Cabeça: repara se ≤40% HP
+            if (p.id === 'head') return p.hp <= p.maxHp * 0.4;
+            // Braços de ataque: repara se ≤30% HP (evita perder DPS)
+            if (p.atk > 0) return p.hp <= p.maxHp * 0.3;
+            return false;
+        });
+
+        if (urgentPart) {
+            const healAmount = 22;
+            urgentPart.hp = Math.min(urgentPart.maxHp, urgentPart.hp + healAmount);
             enemyRepairUsed = true;
             playSound('repair');
-            log(`🛠️ O Inimigo usou Reparo de Emergência na ${enemyHead.name}! (+22 HP)`, 'lose');
+            log(`🛠️ O Inimigo usou Reparo de Emergência na ${urgentPart.name}! (+${healAmount} HP)`, 'lose');
+            setEnemyTurnOverlay(false);
             isPlayerTurn = true;
             render();
             return;
         }
     }
 
-    // 2. Uso do Especial Medaforce pela IA
+    // [BUG 1] Medaforce da IA agora usa executeCombatTurn com pseudo-peça
     if (enemyMedaforce >= 100) {
         enemyMedaforce = 0;
+        battleStats.medaforceUsed++;
         const validTargets = getValidTargets(player);
         const targetKey = validTargets.includes('head') ? 'head' : validTargets[0];
         const target = player.parts[targetKey];
@@ -1133,20 +1188,36 @@ function enemyTurn() {
         log(`⚡ ALERTA! ${enemy.name} ativou o Especial ${enemy.medaforce.name}!`, 'special');
         playSound('medaforceBlast');
 
-        const mfDmg = enemy.medaforce.damage;
-        target.hp = Math.max(0, target.hp - mfDmg);
-        showDamageVisual('player-grid', targetKey, mfDmg, true, false);
+        // Pseudo-peça do Medaforce para reutilizar executeCombatTurn
+        const mfPseudoPart = {
+            id: 'medaforce',
+            name: enemy.medaforce.name,
+            atk: enemy.medaforce.damage,
+            type: 'Medaforce',
+            hp: 1,
+            maxHp: 1,
+            uses: Infinity
+        };
 
-        log(`💥 O especial ${enemy.medaforce.name} causou ${mfDmg} de dano na sua ${target.name}!`, 'lose');
+        executeCombatTurn(mfPseudoPart, target, enemy, player, targetKey, true, true);
 
-        if (target.hp <= 0) {
-            playSound('destroy');
-            log(`💀 Sua ${target.name} foi DESTRUÍDA!`, 'lose');
+        // Cura de suporte do Medaforce (Sailor Multi da IA)
+        if (enemy.medaforce.healAll) {
+            ['head', 'leftArm', 'rightArm', 'legs'].forEach(k => {
+                if (enemy.parts[k].hp > 0) {
+                    enemy.parts[k].hp = Math.min(enemy.parts[k].maxHp, enemy.parts[k].hp + enemy.medaforce.healAll);
+                }
+            });
+            log(`✨ ${enemy.name} restaurou +${enemy.medaforce.healAll} HP de todas as partes!`, 'lose');
         }
 
-        checkHeadDestruction(enemy, player, target, true);
+        if (!gameOver) {
+            // [BUG 3] Verificar empate após Medaforce
+            checkDrawCondition();
+        }
 
         if (!gameOver) {
+            setEnemyTurnOverlay(false);
             isPlayerTurn = true;
             render();
         }
@@ -1157,6 +1228,7 @@ function enemyTurn() {
     const validTargets = getValidTargets(player);
 
     if (validAttackers.length === 0 || validTargets.length === 0) {
+        setEnemyTurnOverlay(false);
         isPlayerTurn = true;
         render();
         return;
@@ -1196,7 +1268,7 @@ function enemyTurn() {
             attackerKey = validAttackers[0];
         }
     } else {
-        // Normal
+        // [GAMEPLAY 7] Normal: agora prioriza o atacante mais forte (antes era aleatório)
         if (validTargets.includes('head') && Math.random() < 0.45) {
             targetKey = 'head';
         } else {
@@ -1204,9 +1276,10 @@ function enemyTurn() {
             targetKey = validTargets[0];
         }
 
-        const arms = validAttackers.filter(k => k !== 'head');
-        if (arms.length > 0 && Math.random() < 0.7) {
-            attackerKey = arms[Math.floor(Math.random() * arms.length)];
+        // Escolhe o atacante mais forte com 60% de chance; aleatório nos outros 40%
+        validAttackers.sort((a, b) => enemy.parts[b].atk - enemy.parts[a].atk);
+        if (Math.random() < 0.6) {
+            attackerKey = validAttackers[0];
         } else {
             attackerKey = validAttackers[Math.floor(Math.random() * validAttackers.length)];
         }
@@ -1222,14 +1295,23 @@ function enemyTurn() {
     }
 
     if (!gameOver) {
+        // [BUG 2 + BUG 3] Verifica K.O. por atacantes e empate
         if (getValidAttackers(player).length === 0) {
-            gameOver = true;
-            log('💥 Você perdeu todas as peças de ataque! Derrota por K.O.!', 'lose');
-            showWinnerAlert(enemy, `${enemy.name} venceu o combate!`);
+            if (getValidAttackers(enemy).length === 0) {
+                // Empate: ambos sem atacantes
+                checkDrawCondition();
+            } else {
+                gameOver = true;
+                log('💥 Você perdeu todas as peças de ataque! Derrota por K.O.!', 'lose');
+                showWinnerAlert(enemy, `${enemy.name} venceu o combate!`);
+            }
         } else {
+            setEnemyTurnOverlay(false);
             isPlayerTurn = true;
             log('👉 Seu turno! Escolha seu ataque.', 'info');
         }
+    } else {
+        setEnemyTurnOverlay(false);
     }
 
     render();

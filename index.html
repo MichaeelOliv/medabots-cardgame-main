@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <meta name="description" content="Medabots Card Game - Simulador oficial de combate tático Robottle com Medaforce e peças customizáveis.">
     <title>Medabots Robottle — Card Game Arena</title>
     <!-- Google Fonts Sci-Fi & Modern UI -->
@@ -189,6 +189,14 @@
             </div>
 
             <div class="medabot-grid" id="enemy-grid" role="region" aria-label="Partes do Inimigo"></div>
+
+            <!-- [UX 8] Overlay de turno do inimigo -->
+            <div id="enemy-turn-overlay" class="enemy-turn-overlay" hidden aria-live="polite">
+                <div class="overlay-content">
+                    <span class="overlay-spinner">⚙️</span>
+                    <span class="overlay-text">Calculando resposta...</span>
+                </div>
+            </div>
         </section>
 
         <!-- CONTROLES CENTRAIS / LOG -->
