@@ -542,10 +542,21 @@ function getValidTargets(medabot) {
     return ['head', 'leftArm', 'rightArm', 'legs'].filter(k => medabot.parts[k].hp > 0);
 }
 
+function sanitizeSelectionState() {
+    if (selectedAttacker && (!player || !player.parts[selectedAttacker] || player.parts[selectedAttacker].hp <= 0 || player.parts[selectedAttacker].atk <= 0 || player.parts[selectedAttacker].uses <= 0)) {
+        selectedAttacker = null;
+    }
+
+    if (selectedTarget && (!enemy || !enemy.parts[selectedTarget] || enemy.parts[selectedTarget].hp <= 0)) {
+        selectedTarget = null;
+    }
+}
+
 // ==========================================================================
 // 6. RENDERIZAÇÃO DO TABULEIRO
 // ==========================================================================
 function render() {
+    sanitizeSelectionState();
     renderGrid('player-grid', player, true);
     renderGrid('enemy-grid', enemy, false);
 

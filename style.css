@@ -388,11 +388,15 @@ body {
     flex-direction: column;
     justify-content: space-between;
     cursor: pointer;
-    transition: all 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease, opacity 0.2s ease;
     user-select: none;
     position: relative;
     overflow: hidden;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+
+.card:active:not(.destroyed):not(.disabled) {
+    transform: scale(0.98);
 }
 
 .card-top {
@@ -1848,4 +1852,1196 @@ body {
 @keyframes overlayPulse {
     from { opacity: 0.6; }
     to   { opacity: 1; }
+}
+
+/* ==========================================================================
+   NOVO SISTEMA DE BATALHA ACESSÍVEL EM 3 ETAPAS
+   ========================================================================== */
+
+/* 1. Toolbar de Acessibilidade no Topo */
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-btn.active {
+    background: rgba(56, 189, 248, 0.35);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 10px var(--neon-cyan-glow);
+    color: #fff;
+}
+
+/* 2. Breadcrumbs das Etapas Acessíveis */
+.status-ribbon {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 14px;
+    background: rgba(15, 23, 42, 0.85);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.step-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.step-pill {
+    background: rgba(21, 29, 50, 0.8);
+    border: 1px solid var(--border-subtle);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.step-pill .pill-num {
+    background: rgba(255, 255, 255, 0.1);
+    color: #fff;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+.step-pill.active {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.3), rgba(168, 85, 247, 0.25));
+    border-color: var(--neon-cyan);
+    color: #fff;
+    box-shadow: 0 0 12px var(--neon-cyan-glow);
+}
+
+.step-pill.active .pill-num {
+    background: var(--neon-cyan);
+    color: #070913;
+}
+
+.step-arrow {
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    user-select: none;
+}
+
+/* 3. Arena Acessível e Barra de Visão Geral */
+.accessible-arena {
+    width: 100%;
+    max-width: 1000px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+}
+
+.combat-overview-bar {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    background: linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(11, 17, 32, 0.95));
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 10px 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+}
+
+.fighter-summary {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.fighter-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.fighter-badge {
+    font-family: var(--font-heading);
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.fighter-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mini-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.72rem;
+}
+
+.mini-bar-label {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    width: 22px;
+    color: var(--text-muted);
+}
+
+.mini-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.mini-fill {
+    height: 100%;
+    transition: width 0.4s ease;
+}
+
+.mini-fill.hp-fill.player-hp {
+    background: linear-gradient(90deg, #10b981, #22c55e);
+}
+
+.mini-fill.hp-fill.enemy-hp {
+    background: linear-gradient(90deg, #ef4444, #f97316);
+}
+
+.mini-fill.mf-fill {
+    background: linear-gradient(90deg, #8b5cf6, #d946ef);
+}
+
+.mini-fill.mf-fill.charged {
+    background: linear-gradient(90deg, #facc15, #fbbf24);
+    box-shadow: 0 0 8px rgba(250, 204, 21, 0.8);
+}
+
+.mini-val {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    min-width: 42px;
+    text-align: right;
+    color: var(--text-main);
+}
+
+.overview-center-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 0 8px;
+}
+
+.vs-badge {
+    font-family: var(--font-heading);
+    font-weight: 900;
+    font-size: 1rem;
+    color: var(--neon-gold);
+    text-shadow: 0 0 10px rgba(250, 204, 21, 0.5);
+}
+
+.mini-inspect-btn {
+    background: rgba(56, 189, 248, 0.15);
+    border: 1px solid var(--neon-cyan);
+    color: #fff;
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    padding: 4px 8px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.mini-inspect-btn:hover {
+    background: rgba(56, 189, 248, 0.35);
+    box-shadow: 0 0 8px var(--neon-cyan-glow);
+}
+
+/* 4. Telas das Etapas (Step Views) */
+.battle-step-view {
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    padding: 22px 24px;
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.45);
+    animation: stepSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.battle-step-view[hidden] {
+    display: none !important;
+}
+
+@keyframes stepSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px) scale(0.99);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.step-card-header {
+    margin-bottom: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 14px;
+}
+
+.step-tag-pill {
+    display: inline-block;
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    color: var(--neon-cyan);
+    background: rgba(56, 189, 248, 0.12);
+    border: 1px solid rgba(56, 189, 248, 0.3);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 8px;
+}
+
+.step-main-question {
+    font-family: var(--font-heading);
+    font-size: 1.55rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 6px;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 16px rgba(255, 255, 255, 0.15);
+}
+
+.step-instruction {
+    font-family: var(--font-ui);
+    font-size: 1.08rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.step-instruction strong {
+    color: var(--neon-gold);
+}
+
+/* 5. Grid de Alvos Acessíveis (Etapa 1) */
+.accessible-targets-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+    margin-bottom: 18px;
+}
+
+.target-card-accessible {
+    background: var(--bg-card);
+    border: 2px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    user-select: none;
+}
+
+.target-card-accessible:hover:not(.destroyed) {
+    background: var(--bg-card-hover);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 18px var(--neon-cyan-glow);
+    transform: translateY(-2px);
+}
+
+.target-card-accessible:focus-visible {
+    outline: 3px solid var(--neon-cyan);
+    outline-offset: 3px;
+}
+
+.target-card-accessible.selected-target {
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 20px var(--neon-gold-glow);
+    background: rgba(250, 204, 21, 0.08);
+}
+
+.target-card-accessible.destroyed {
+    opacity: 0.5;
+    filter: grayscale(0.8);
+    cursor: not-allowed;
+    border-color: rgba(239, 68, 68, 0.3);
+    background: rgba(20, 10, 15, 0.6);
+}
+
+.target-hotkey {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--neon-gold);
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+}
+
+.target-img-wrap {
+    width: 68px;
+    height: 68px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    background: #000;
+    flex-shrink: 0;
+}
+
+.target-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.target-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.target-slot-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.target-slot-badge {
+    font-family: var(--font-heading);
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    text-transform: uppercase;
+}
+
+.target-type-badge {
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    background: rgba(255, 255, 255, 0.06);
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.target-name {
+    font-family: var(--font-ui);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.target-hp-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 2px;
+}
+
+.target-hp-track {
+    flex: 1;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 5px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.target-hp-fill {
+    height: 100%;
+    transition: width 0.3s ease;
+}
+
+.target-hp-num {
+    font-family: var(--font-heading);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-main);
+    min-width: 55px;
+    text-align: right;
+}
+
+.target-tactical-note {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    margin-top: 2px;
+}
+
+.target-card-accessible.destroyed .target-tactical-note {
+    color: var(--neon-red);
+    font-weight: 700;
+}
+
+.step-helper-box {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(56, 189, 248, 0.06);
+    border: 1px solid rgba(56, 189, 248, 0.2);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 0.92rem;
+    color: var(--text-muted);
+}
+
+.step-helper-box .helper-icon {
+    font-size: 1.2rem;
+}
+
+.step-helper-box strong {
+    color: #fff;
+}
+
+/* 6. Confirmação do Alvo & Menu de Ações (Etapa 2) */
+.target-confirmation-card {
+    background: linear-gradient(135deg, rgba(250, 204, 21, 0.08), rgba(56, 189, 248, 0.06));
+    border: 2px solid var(--neon-gold);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.15);
+}
+
+.confirm-target-img {
+    width: 64px;
+    height: 64px;
+    border-radius: 8px;
+    object-fit: cover;
+    border: 1px solid var(--neon-gold);
+    background: #000;
+}
+
+.confirm-target-details {
+    flex: 1;
+}
+
+.confirm-target-label {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    color: var(--neon-gold);
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.confirm-target-name {
+    font-family: var(--font-ui);
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.confirm-target-stats {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 4px;
+}
+
+.confirm-target-stats strong {
+    color: #fff;
+}
+
+.accessible-actions-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.action-card-btn {
+    width: 100%;
+    background: var(--bg-card);
+    border: 2px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 14px 18px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    transition: all 0.22s ease;
+    text-align: left;
+    color: var(--text-main);
+}
+
+.action-card-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+.action-card-btn:focus-visible {
+    outline: 3px solid var(--neon-cyan);
+    outline-offset: 3px;
+}
+
+.action-card-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    filter: grayscale(0.7);
+}
+
+.action-card-btn.primary {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.18), rgba(250, 204, 21, 0.12));
+    border-color: var(--neon-cyan);
+}
+
+.action-card-btn.primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.32), rgba(250, 204, 21, 0.22));
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 18px var(--neon-gold-glow);
+}
+
+.action-card-btn.support {
+    border-color: rgba(34, 197, 94, 0.4);
+    background: rgba(34, 197, 94, 0.08);
+}
+
+.action-card-btn.support:hover:not(:disabled) {
+    border-color: var(--neon-green);
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.35);
+}
+
+.action-card-btn.special {
+    border-color: rgba(168, 85, 247, 0.4);
+    background: rgba(168, 85, 247, 0.08);
+}
+
+.action-card-btn.special.charged {
+    border-color: var(--neon-gold);
+    background: linear-gradient(135deg, rgba(168, 85, 247, 0.25), rgba(250, 204, 21, 0.25));
+    box-shadow: 0 0 20px var(--neon-gold-glow);
+    animation: medaforcePulse 1.5s infinite alternate;
+}
+
+@keyframes medaforcePulse {
+    from { box-shadow: 0 0 10px rgba(250, 204, 21, 0.3); }
+    to   { box-shadow: 0 0 24px rgba(250, 204, 21, 0.8); }
+}
+
+.action-card-icon-wrap {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.08);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    flex-shrink: 0;
+}
+
+.action-card-texts {
+    flex: 1;
+}
+
+.action-title-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-card-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.action-hotkey-badge {
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 700;
+    color: var(--neon-cyan);
+    background: rgba(56, 189, 248, 0.15);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(56, 189, 248, 0.3);
+}
+
+.action-card-desc {
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    margin-top: 3px;
+    line-height: 1.35;
+}
+
+.action-card-arrow {
+    font-size: 1.2rem;
+    color: var(--neon-cyan);
+    font-weight: 700;
+}
+
+.action-status-pill {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-muted);
+}
+
+.action-status-pill.ready {
+    background: var(--neon-green);
+    color: #000;
+}
+
+.action-status-pill.charged-pill {
+    background: var(--neon-purple);
+    color: #fff;
+}
+
+.action-status-pill.charged-pill.full {
+    background: var(--neon-gold);
+    color: #000;
+    font-weight: 900;
+    box-shadow: 0 0 10px rgba(250, 204, 21, 0.6);
+}
+
+/* 7. Arsenal do Jogador (Etapa 3) */
+.current-target-strip {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(250, 204, 21, 0.12);
+    border: 1px solid rgba(250, 204, 21, 0.3);
+    border-radius: 8px;
+    padding: 8px 14px;
+    margin-top: 10px;
+    font-size: 0.98rem;
+    color: var(--text-main);
+}
+
+.current-target-strip strong {
+    color: var(--neon-gold);
+}
+
+.accessible-attackers-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 22px;
+}
+
+.attacker-card-accessible {
+    background: var(--bg-card);
+    border: 2px solid var(--border-subtle);
+    border-radius: 12px;
+    padding: 16px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 10px;
+    cursor: pointer;
+    transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    user-select: none;
+}
+
+.attacker-card-accessible:hover:not(.disabled) {
+    background: var(--bg-card-hover);
+    border-color: var(--neon-cyan);
+    box-shadow: 0 0 18px var(--neon-cyan-glow);
+    transform: translateY(-2px);
+}
+
+.attacker-card-accessible:focus-visible {
+    outline: 3px solid var(--neon-cyan);
+    outline-offset: 3px;
+}
+
+.attacker-card-accessible.selected-attacker {
+    border-color: var(--neon-gold);
+    box-shadow: 0 0 22px var(--neon-gold-glow);
+    background: rgba(250, 204, 21, 0.12);
+    transform: scale(1.02);
+}
+
+.attacker-card-accessible.disabled {
+    opacity: 0.45;
+    filter: grayscale(0.8);
+    cursor: not-allowed;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.attacker-hotkey {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: var(--neon-cyan);
+    font-family: var(--font-heading);
+    font-size: 0.68rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 6px;
+}
+
+.attacker-img-wrap {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid var(--border-subtle);
+    background: #000;
+}
+
+.attacker-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.attacker-info {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.attacker-slot-title {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    color: var(--neon-cyan);
+    letter-spacing: 1px;
+}
+
+.attacker-part-name {
+    font-family: var(--font-ui);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.attacker-atk-badge {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: var(--neon-gold);
+    background: rgba(250, 204, 21, 0.12);
+    border: 1px solid rgba(250, 204, 21, 0.3);
+    padding: 4px 10px;
+    border-radius: 6px;
+    margin-top: 2px;
+}
+
+.attacker-uses-label {
+    font-size: 0.78rem;
+    color: var(--text-dim);
+}
+
+.attacker-card-accessible.selected-attacker .attacker-uses-label {
+    color: var(--neon-gold);
+    font-weight: 700;
+}
+
+.step-3-execution-bar {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.btn-strike-primary {
+    flex: 2;
+    background: linear-gradient(135deg, #facc15, #eab308);
+    color: #070913;
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 900;
+    letter-spacing: 1px;
+    padding: 16px 22px;
+    border-radius: 10px;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(250, 204, 21, 0.4);
+    transition: all 0.22s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.btn-strike-primary:hover:not(:disabled) {
+    background: linear-gradient(135deg, #fef08a, #facc15);
+    box-shadow: 0 0 30px rgba(250, 204, 21, 0.7);
+    transform: translateY(-2px);
+}
+
+.btn-strike-primary:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-strike-secondary {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid var(--border-subtle);
+    color: var(--text-muted);
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    padding: 16px 18px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-strike-secondary:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    border-color: var(--neon-cyan);
+}
+
+/* 8. Tela do Turno do Adversário (Etapa 4) */
+.enemy-step-view {
+    border-color: rgba(239, 68, 68, 0.4);
+    background: linear-gradient(180deg, rgba(20, 10, 18, 0.96), rgba(15, 23, 42, 0.96));
+}
+
+.enemy-turn-theater {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 30px 20px;
+    position: relative;
+    overflow: hidden;
+}
+
+.enemy-theater-pulse {
+    position: absolute;
+    width: 250px;
+    height: 250px;
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.2) 0%, transparent 70%);
+    border-radius: 50%;
+    animation: enemyPulseGlow 1.8s infinite alternate;
+    pointer-events: none;
+}
+
+@keyframes enemyPulseGlow {
+    from { transform: scale(0.85); opacity: 0.3; }
+    to   { transform: scale(1.25); opacity: 0.8; }
+}
+
+.enemy-theater-badge {
+    font-family: var(--font-heading);
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--neon-red);
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+}
+
+.enemy-theater-title {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 16px;
+    text-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+.enemy-action-presentation {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    max-width: 500px;
+    margin-bottom: 24px;
+}
+
+.enemy-spinner-icon {
+    font-size: 2.5rem;
+    animation: spinnerSpin 1.4s linear infinite;
+}
+
+.enemy-theater-narrative {
+    font-family: var(--font-ui);
+    font-size: 1.25rem;
+    color: var(--text-main);
+    line-height: 1.4;
+}
+
+.enemy-theater-progress {
+    width: 100%;
+    max-width: 400px;
+    height: 6px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 3px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.enemy-theater-bar {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--neon-red), var(--neon-gold));
+    animation: enemyBarProgress 1.4s ease-in-out infinite alternate;
+}
+
+@keyframes enemyBarProgress {
+    from { transform: translateX(-100%); }
+    to   { transform: translateX(100%); }
+}
+
+/* 9. Modal de Diagnóstico Completo dos 2 Robôs */
+.full-robot-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.full-robot-modal[hidden] {
+    display: none !important;
+}
+
+.full-robot-box {
+    background: var(--bg-panel);
+    border: 2px solid var(--neon-cyan);
+    border-radius: 14px;
+    width: 100%;
+    max-width: 900px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 0 35px var(--neon-cyan-glow);
+}
+
+.full-robot-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border-subtle);
+    font-family: var(--font-heading);
+    color: #fff;
+}
+
+.close-modal-icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1.4rem;
+    cursor: pointer;
+    transition: color 0.2s ease;
+}
+
+.close-modal-icon-btn:hover {
+    color: #fff;
+}
+
+.full-robot-body {
+    padding: 18px 20px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.blueprint-title {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.blueprint-title.player { color: var(--neon-cyan); }
+.blueprint-title.enemy { color: var(--neon-red); }
+
+.full-robot-footer {
+    padding: 12px 20px;
+    border-top: 1px solid var(--border-subtle);
+    display: flex;
+    justify-content: flex-end;
+}
+
+/* 10. Gaveta Lateral do Histórico / Terminal */
+.battle-log-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    max-width: 420px;
+    background: rgba(11, 17, 32, 0.98);
+    border-left: 2px solid var(--border-bright);
+    box-shadow: -10px 0 30px rgba(0, 0, 0, 0.6);
+    z-index: 1050;
+    display: flex;
+    flex-direction: column;
+    animation: drawerSlideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.battle-log-drawer[hidden] {
+    display: none !important;
+}
+
+@keyframes drawerSlideIn {
+    from { transform: translateX(100%); }
+    to   { transform: translateX(0); }
+}
+
+.drawer-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.drawer-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-heading);
+    font-size: 0.9rem;
+    color: #fff;
+}
+
+.drawer-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.close-btn {
+    font-size: 1rem;
+    padding: 4px 8px;
+}
+
+/* 11. Modo de Alto Contraste Acessível */
+body.high-contrast-mode {
+    background: #000000 !important;
+    background-image: none !important;
+    color: #ffffff !important;
+}
+
+body.high-contrast-mode .cyber-scanlines {
+    display: none !important;
+}
+
+body.high-contrast-mode .game-header,
+body.high-contrast-mode .status-ribbon,
+body.high-contrast-mode .battle-step-view,
+body.high-contrast-mode .combat-overview-bar,
+body.high-contrast-mode .target-card-accessible,
+body.high-contrast-mode .attacker-card-accessible,
+body.high-contrast-mode .action-card-btn {
+    background: #000000 !important;
+    border: 3px solid #ffff00 !important;
+    box-shadow: none !important;
+    color: #ffffff !important;
+}
+
+body.high-contrast-mode .target-card-accessible.selected-target,
+body.high-contrast-mode .attacker-card-accessible.selected-attacker,
+body.high-contrast-mode .step-pill.active {
+    background: #111111 !important;
+    border: 3px solid #00ffff !important;
+}
+
+body.high-contrast-mode .step-main-question,
+body.high-contrast-mode .game-title,
+body.high-contrast-mode .action-card-title {
+    color: #ffff00 !important;
+    text-shadow: none !important;
+}
+
+body.high-contrast-mode .target-name,
+body.high-contrast-mode .attacker-part-name {
+    color: #ffffff !important;
+    font-size: 1.3rem !important;
+}
+
+body.high-contrast-mode .btn-strike-primary {
+    background: #ffff00 !important;
+    color: #000000 !important;
+    border: 3px solid #ffffff !important;
+    font-size: 1.35rem !important;
+}
+
+/* 12. Responsividade Mobile */
+@media (max-width: 768px) {
+    .step-main-question {
+        font-size: 1.25rem;
+    }
+
+    .combat-overview-bar {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .overview-center-controls {
+        flex-direction: row;
+        width: 100%;
+        justify-content: space-between;
+        padding: 4px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .accessible-targets-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .accessible-attackers-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .step-3-execution-bar {
+        flex-direction: column;
+    }
+
+    .full-robot-body {
+        grid-template-columns: 1fr;
+    }
 }

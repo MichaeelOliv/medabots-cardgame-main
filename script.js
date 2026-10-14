@@ -323,7 +323,7 @@ function createMedabot(name) {
 }
 
 // ==========================================================================
-// 3. ESTADO DO JOGO
+// 3. ESTADO DO JOGO E ACESSIBILIDADE
 // ==========================================================================
 let player = null;
 let enemy = null;
@@ -337,12 +337,59 @@ let playerMedaforce = 0;
 let enemyMedaforce = 0;
 let gameDifficulty = 'normal';
 
+// Fluxo de Combate Acessível em 3 Etapas (1: Alvo, 2: Confirmação/Menu, 3: Sua Arma, 4: Turno Oponente)
+let currentBattleStep = 1;
+let voiceNarrationEnabled = false;
+let highContrastEnabled = false;
+
 let battleStats = {
     turns: 1,
     damageDealt: 0,
     partsDestroyed: 0,
     medaforceUsed: 0
 };
+
+// ==========================================================================
+// 3.1 MOTOR DE LEITURA EM VOZ ALTA (Web Speech API Acessível)
+// ==========================================================================
+function narrate(text) {
+    if (!voiceNarrationEnabled || !('speechSynthesis' in window)) return;
+    try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = 'pt-BR';
+        utterance.rate = 1.05;
+        window.speechSynthesis.speak(utterance);
+    } catch (e) {
+        console.warn('Speech synthesis warning:', e);
+    }
+}
+
+function toggleVoiceNarration() {
+    voiceNarrationEnabled = !voiceNarrationEnabled;
+    const btn = document.getElementById('voice-toggle-btn');
+    if (btn) {
+        btn.classList.toggle('active', voiceNarrationEnabled);
+        btn.setAttribute('aria-pressed', voiceNarrationEnabled ? 'true' : 'false');
+    }
+    showToast(voiceNarrationEnabled ? '🗣️ Leitor de Voz Acessível ATIVADO!' : '🗣️ Leitor de Voz Desativado', '🗣️');
+    playSound('click');
+    if (voiceNarrationEnabled) {
+        narrate('Leitor de voz acessível ativado com sucesso.');
+    }
+}
+
+function toggleHighContrast() {
+    highContrastEnabled = !highContrastEnabled;
+    document.body.classList.toggle('high-contrast-mode', highContrastEnabled);
+    const btn = document.getElementById('contrast-toggle-btn');
+    if (btn) {
+        btn.classList.toggle('active', highContrastEnabled);
+        btn.setAttribute('aria-pressed', highContrastEnabled ? 'true' : 'false');
+    }
+    showToast(highContrastEnabled ? '👁️ Modo Alto Contraste ATIVADO!' : '👁️ Modo Alto Contraste Desativado', '👁️');
+    playSound('click');
+}
 
 // ==========================================================================
 // 4. SISTEMA DE LOG E INTERFACE
@@ -736,6 +783,7 @@ function startGame(playerName) {
     enemyRepairUsed = false;
     playerMedaforce = 0;
     enemyMedaforce = 0;
+    currentBattleStep = 1;
 
     battleStats = {
         turns: 1,
@@ -744,8 +792,10 @@ function startGame(playerName) {
         medaforceUsed: 0
     };
 
-    document.getElementById('player-title').textContent = `${player.name} (${player.role.split(' ')[0]})`;
-    document.getElementById('enemy-title').textContent = `${enemy.name} (${enemy.role.split(' ')[0]})`;
+    const pTitle = document.getElementById('player-title');
+    const eTitle = document.getElementById('enemy-title');
+    if (pTitle) pTitle.textContent = `${player.name}`;
+    if (eTitle) eTitle.textContent = `${enemy.name}`;
 
     const selScreen = document.getElementById('selection-screen');
     if (selScreen) selScreen.hidden = true;
@@ -753,26 +803,368 @@ function startGame(playerName) {
     hideWinnerAlert();
     clearLog();
     log(`🤖 Robottle Iniciado! ${player.name} VS ${enemy.name}.`, 'special');
-    log(`Dificuldade da IA: ${gameDifficulty.toUpperCase()}. Selecione uma peça para atacar!`, 'info');
+    log(`Dificuldade da IA: ${gameDifficulty.toUpperCase()}. Escolha qual parte do oponente atacar!`, 'info');
 
+    setBattleStep(1);
     render();
 }
 
 function getValidAttackers(medabot) {
+    if (!medabot) return [];
     return ['head', 'leftArm', 'rightArm'].filter(k => {
         const p = medabot.parts[k];
-        return p.hp > 0 && p.atk > 0 && p.uses > 0;
+        return p && p.hp > 0 && p.atk > 0 && p.uses > 0;
     });
 }
 
 function getValidTargets(medabot) {
-    return ['head', 'leftArm', 'rightArm', 'legs'].filter(k => medabot.parts[k].hp > 0);
+    if (!medabot) return [];
+    return ['head', 'leftArm', 'rightArm', 'legs'].filter(k => medabot.parts[k] && medabot.parts[k].hp > 0);
+}
+
+function sanitizeSelectionState() {
+    if (selectedAttacker && (!player || !player.parts[selectedAttacker] || player.parts[selectedAttacker].hp <= 0 || player.parts[selectedAttacker].atk <= 0 || player.parts[selectedAttacker].uses <= 0)) {
+        selectedAttacker = null;
+    }
+
+    if (selectedTarget && (!enemy || !enemy.parts[selectedTarget] || enemy.parts[selectedTarget].hp <= 0)) {
+        selectedTarget = null;
+    }
+}
+
+// ==========================================================================
+// 5.1 GERENCIADOR DE ETAPAS DA BATALHA ACESSÍVEL
+// ==========================================================================
+function setBattleStep(step) {
+    if (gameOver && step !== 1) return;
+    currentBattleStep = step;
+
+    const step1 = document.getElementById('battle-step-1');
+    const step2 = document.getElementById('battle-step-2');
+    const step3 = document.getElementById('battle-step-3');
+    const stepEnemy = document.getElementById('battle-step-enemy');
+
+    if (step1) step1.hidden = (step !== 1);
+    if (step2) step2.hidden = (step !== 2);
+    if (step3) step3.hidden = (step !== 3);
+    if (stepEnemy) stepEnemy.hidden = (step !== 4);
+
+    // Atualiza os breadcrumbs das etapas
+    [1, 2, 3].forEach(n => {
+        const pill = document.getElementById(`breadcrumb-step-${n}`);
+        if (pill) {
+            pill.classList.toggle('active', step === n);
+            if (step === n) {
+                pill.setAttribute('aria-current', 'step');
+            } else {
+                pill.removeAttribute('aria-current');
+            }
+        }
+    });
+
+    const turnInd = document.getElementById('turn-text');
+    if (turnInd && !gameOver) {
+        if (step === 1) turnInd.textContent = 'Seu Turno — Etapa 1: Mirar no Alvo';
+        else if (step === 2) turnInd.textContent = 'Seu Turno — Etapa 2: Confirmar Ação';
+        else if (step === 3) turnInd.textContent = 'Seu Turno — Etapa 3: Escolher Arma';
+        else if (step === 4) turnInd.textContent = 'Turno do Adversário...';
+    }
+
+    if (step === 1) {
+        renderStep1();
+        narrate('Etapa 1. Qual parte do adversário você deseja atacar? Digite 1 para Cabeça, 2 para Braço Esquerdo, 3 para Braço Direito, 4 para Pernas.');
+    } else if (step === 2) {
+        renderStep2();
+        const targetPart = enemy && selectedTarget ? enemy.parts[selectedTarget] : null;
+        const targetName = targetPart ? targetPart.name : 'peça';
+        narrate(`Etapa 2. Alvo mirado: ${targetName}. Confirme com 1 para atacar, 2 para reparo, 3 para especial Medaforce, 4 para trocar alvo, ou Escape para o menu.`);
+    } else if (step === 3) {
+        renderStep3();
+        narrate('Etapa 3. Qual parte você usará para atacar? Escolha entre Cabeça, Braço Esquerdo ou Braço Direito.');
+    }
+
+    updateOverviewBar();
+}
+
+function updateOverviewBar() {
+    if (!player || !enemy) return;
+
+    const playerTotalHp = ['head', 'leftArm', 'rightArm', 'legs'].reduce((sum, k) => sum + (player.parts[k]?.hp || 0), 0);
+    const playerMaxHp = ['head', 'leftArm', 'rightArm', 'legs'].reduce((sum, k) => sum + (player.parts[k]?.maxHp || 0), 0);
+    const enemyTotalHp = ['head', 'leftArm', 'rightArm', 'legs'].reduce((sum, k) => sum + (enemy.parts[k]?.hp || 0), 0);
+    const enemyMaxHp = ['head', 'leftArm', 'rightArm', 'legs'].reduce((sum, k) => sum + (enemy.parts[k]?.maxHp || 0), 0);
+
+    const playerPct = Math.max(0, Math.round((playerTotalHp / playerMaxHp) * 100));
+    const enemyPct = Math.max(0, Math.round((enemyTotalHp / enemyMaxHp) * 100));
+
+    const pHpBar = document.getElementById('overview-player-hp-bar');
+    const pHpVal = document.getElementById('overview-player-hp-val');
+    const eHpBar = document.getElementById('overview-enemy-hp-bar');
+    const eHpVal = document.getElementById('overview-enemy-hp-val');
+
+    if (pHpBar) pHpBar.style.width = `${playerPct}%`;
+    if (pHpVal) pHpVal.textContent = `${playerTotalHp}/${playerMaxHp}`;
+    if (eHpBar) eHpBar.style.width = `${enemyPct}%`;
+    if (eHpVal) eHpVal.textContent = `${enemyTotalHp}/${enemyMaxHp}`;
+
+    const pTitle = document.getElementById('player-title');
+    const eTitle = document.getElementById('enemy-title');
+    if (pTitle) pTitle.textContent = player.name;
+    if (eTitle) eTitle.textContent = enemy.name;
+}
+
+const TARGET_KEYS = [
+    { key: 'head', label: 'Cabeça', hotkey: '1', note: '⚠️ Alvo Crítico (K.O. total se destruída!)' },
+    { key: 'leftArm', label: 'Braço Esq.', hotkey: '2', note: '🗡️ Arma Secundária do Oponente' },
+    { key: 'rightArm', label: 'Braço Dir.', hotkey: '3', note: '⚔️ Arma Principal do Oponente' },
+    { key: 'legs', label: 'Pernas', hotkey: '4', note: '💨 Destruir anula a esquiva a 0%' }
+];
+
+function selectTargetByKey(key) {
+    if (!enemy || !enemy.parts[key] || enemy.parts[key].hp <= 0) {
+        showToast('Esta parte já foi destruída! Escolha um alvo ativo.', '⚠️');
+        playSound('dodge');
+        return;
+    }
+    selectedTarget = key;
+    playSound('click');
+    const part = enemy.parts[key];
+    log(`🎯 Alvo selecionado: ${part.name} do Inimigo.`);
+    setBattleStep(2);
+}
+
+function renderStep1() {
+    const grid = document.getElementById('enemy-target-grid');
+    if (!grid || !enemy) return;
+    grid.innerHTML = '';
+
+    TARGET_KEYS.forEach(item => {
+        const part = enemy.parts[item.key];
+        if (!part) return;
+        const isDestroyed = part.hp <= 0;
+        const hpPct = Math.max(0, Math.round((part.hp / part.maxHp) * 100));
+        const barColor = hpPct < 30 ? 'var(--neon-red)' : hpPct < 60 ? 'var(--neon-gold)' : 'var(--neon-green)';
+
+        const card = document.createElement('div');
+        card.className = `target-card-accessible ${isDestroyed ? 'destroyed' : ''} ${selectedTarget === item.key ? 'selected-target' : ''}`;
+        card.setAttribute('role', 'radio');
+        card.setAttribute('aria-checked', selectedTarget === item.key ? 'true' : 'false');
+        card.setAttribute('aria-label', `${item.label}: ${part.name}. HP: ${part.hp} de ${part.maxHp}. ${isDestroyed ? 'Destruída' : 'Ativa'}.`);
+        card.tabIndex = isDestroyed ? -1 : 0;
+
+        card.innerHTML = `
+            <span class="target-hotkey">Teclar [${item.hotkey}]</span>
+            <div class="target-img-wrap">
+                <img src="${part.image}" alt="${part.name}">
+            </div>
+            <div class="target-info">
+                <div class="target-slot-row">
+                    <span class="target-slot-badge">${item.label}</span>
+                    <span class="target-type-badge">${part.type || 'Ofensiva'}</span>
+                </div>
+                <div class="target-name">${part.name}</div>
+                <div class="target-hp-row">
+                    <div class="target-hp-track">
+                        <div class="target-hp-fill" style="width: ${hpPct}%; background: ${barColor};"></div>
+                    </div>
+                    <span class="target-hp-num">${part.hp}/${part.maxHp} HP</span>
+                </div>
+                <div class="target-tactical-note">${isDestroyed ? '💥 PEÇA DESTRUÍDA' : item.note}</div>
+            </div>
+        `;
+
+        if (!isDestroyed && isPlayerTurn && !gameOver) {
+            const selectTargetFn = () => selectTargetByKey(item.key);
+            card.addEventListener('click', selectTargetFn);
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectTargetFn();
+                }
+            });
+        }
+
+        grid.appendChild(card);
+    });
+}
+
+function renderStep2() {
+    if (!enemy || !selectedTarget) {
+        setBattleStep(1);
+        return;
+    }
+
+    const part = enemy.parts[selectedTarget];
+    if (!part || part.hp <= 0) {
+        selectedTarget = null;
+        setBattleStep(1);
+        return;
+    }
+
+    const preview = document.getElementById('target-confirmation-card');
+    if (preview) {
+        const slotLabel = selectedTarget === 'head' ? 'Cabeça' : selectedTarget === 'leftArm' ? 'Braço Esquerdo' : selectedTarget === 'rightArm' ? 'Braço Direito' : 'Pernas';
+        const hpPct = Math.max(0, Math.round((part.hp / part.maxHp) * 100));
+
+        preview.innerHTML = `
+            <img class="confirm-target-img" src="${part.image}" alt="${part.name}">
+            <div class="confirm-target-details">
+                <div class="confirm-target-label">🎯 ALVO SELECIONADO • ${slotLabel.toUpperCase()}</div>
+                <div class="confirm-target-name">${part.name} (${enemy.name})</div>
+                <div class="confirm-target-stats">
+                    <span>Vida: <strong>${part.hp}/${part.maxHp} HP (${hpPct}%)</strong></span>
+                    <span>Tipo: <strong>${part.type || 'Padrão'}</strong></span>
+                </div>
+            </div>
+        `;
+    }
+
+    // Botão Reparo
+    const repairBtn = document.getElementById('btn-step2-repair');
+    const repairStatus = document.getElementById('step2-repair-status');
+    const repairDesc = document.getElementById('step2-repair-desc');
+    const hasDamaged = ['head', 'leftArm', 'rightArm', 'legs'].some(k => player.parts[k].hp > 0 && player.parts[k].hp < player.parts[k].maxHp);
+
+    if (repairBtn && repairStatus) {
+        if (playerRepairUsed) {
+            repairBtn.disabled = true;
+            repairStatus.textContent = 'ESGOTADO';
+            repairStatus.className = 'action-status-pill';
+            if (repairDesc) repairDesc.textContent = 'O reparo de emergência já foi utilizado nesta batalha.';
+        } else if (!hasDamaged) {
+            repairBtn.disabled = true;
+            repairStatus.textContent = 'VIDA CHEIA';
+            repairStatus.className = 'action-status-pill';
+            if (repairDesc) repairDesc.textContent = 'Todas as suas peças já estão com 100% de vida.';
+        } else {
+            repairBtn.disabled = false;
+            repairStatus.textContent = 'DISPONÍVEL (1x)';
+            repairStatus.className = 'action-status-pill ready';
+            if (repairDesc) repairDesc.textContent = 'Restaura até +22 de HP na sua peça mais danificada.';
+        }
+    }
+
+    // Botão Medaforce
+    const mfBtn = document.getElementById('btn-step2-medaforce');
+    const mfTitle = document.getElementById('step2-medaforce-title');
+    const mfDesc = document.getElementById('step2-medaforce-desc');
+    const mfStatus = document.getElementById('step2-medaforce-status');
+
+    if (mfBtn && mfStatus && player) {
+        if (mfTitle) mfTitle.textContent = `${player.medaforce.name}`;
+        if (mfDesc) mfDesc.textContent = `${player.medaforce.desc} (Dano: ${player.medaforce.damage})`;
+
+        if (playerMedaforce >= 100) {
+            mfBtn.disabled = false;
+            mfBtn.classList.add('charged');
+            mfStatus.textContent = '⚡ 100% PRONTO!';
+            mfStatus.className = 'action-status-pill charged-pill full';
+        } else {
+            mfBtn.disabled = true;
+            mfBtn.classList.remove('charged');
+            mfStatus.textContent = `${playerMedaforce}% / 100%`;
+            mfStatus.className = 'action-status-pill charged-pill';
+        }
+    }
+}
+
+const ATTACKER_KEYS = [
+    { key: 'head', label: 'Cabeça', hotkey: '1' },
+    { key: 'leftArm', label: 'Braço Esquerdo', hotkey: '2' },
+    { key: 'rightArm', label: 'Braço Direito', hotkey: '3' }
+];
+
+function selectAttackerByKey(key) {
+    if (!player || !player.parts[key]) return;
+    const part = player.parts[key];
+    const isUsable = part.hp > 0 && part.atk > 0 && part.uses > 0;
+    if (!isUsable) {
+        showToast(`A peça ${part.name} não pode atacar agora!`, '⚠️');
+        playSound('dodge');
+        return;
+    }
+    selectedAttacker = key;
+    playSound('click');
+    log(`⚔️ Arma Selecionada: ${part.name} (ATK ${part.atk}).`);
+    narrate(`Arma selecionada: ${part.name}. Dano de ataque: ${part.atk}. Pressione Enter para disparar!`);
+    renderStep3();
+}
+
+function renderStep3() {
+    if (!player || !enemy || !selectedTarget) {
+        setBattleStep(1);
+        return;
+    }
+
+    const targetPart = enemy.parts[selectedTarget];
+    const targetDisplay = document.getElementById('step3-target-display-name');
+    if (targetDisplay && targetPart) {
+        targetDisplay.textContent = `${targetPart.name} (${enemy.name}) — HP: ${targetPart.hp}/${targetPart.maxHp}`;
+    }
+
+    const grid = document.getElementById('player-attacker-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    ATTACKER_KEYS.forEach(item => {
+        const part = player.parts[item.key];
+        if (!part) return;
+
+        const isUsable = part.hp > 0 && part.atk > 0 && part.uses > 0;
+        const card = document.createElement('div');
+        card.className = `attacker-card-accessible ${!isUsable ? 'disabled' : ''} ${selectedAttacker === item.key ? 'selected-attacker' : ''}`;
+        card.setAttribute('role', 'radio');
+        card.setAttribute('aria-checked', selectedAttacker === item.key ? 'true' : 'false');
+        card.tabIndex = isUsable ? 0 : -1;
+
+        const usesText = part.uses === Infinity ? '⚡ Usos Ilimitados' : `⚡ Restam: ${part.uses}x`;
+
+        card.innerHTML = `
+            <span class="attacker-hotkey">Teclar [${item.hotkey}]</span>
+            <div class="attacker-img-wrap">
+                <img src="${part.image}" alt="${part.name}">
+            </div>
+            <div class="attacker-info">
+                <span class="attacker-slot-title">${item.label.toUpperCase()}</span>
+                <span class="attacker-part-name">${part.name}</span>
+                <span class="attacker-atk-badge">💥 ATK ${part.atk}</span>
+                <span class="attacker-uses-label">${!isUsable ? '❌ INDISPONÍVEL' : usesText}</span>
+            </div>
+        `;
+
+        if (isUsable) {
+            const selectAttackerFn = () => selectAttackerByKey(item.key);
+            card.addEventListener('click', selectAttackerFn);
+            card.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    selectAttackerFn();
+                }
+            });
+        }
+
+        grid.appendChild(card);
+    });
+
+    // Atualizar Botão de Execução
+    const strikeBtn = document.getElementById('btn-execute-strike');
+    if (strikeBtn) {
+        if (selectedAttacker && player.parts[selectedAttacker] && player.parts[selectedAttacker].hp > 0) {
+            const chosen = player.parts[selectedAttacker];
+            strikeBtn.disabled = false;
+            strikeBtn.innerHTML = `⚔️ DESFERIR ATAQUE COM ${chosen.name.toUpperCase()}! [Enter]`;
+        } else {
+            strikeBtn.disabled = true;
+            strikeBtn.innerHTML = `⚔️ SELECIONE UMA ARMA ACIMA`;
+        }
+    }
 }
 
 // ==========================================================================
 // 6. RENDERIZAÇÃO DO TABULEIRO
 // ==========================================================================
 function render() {
+    sanitizeSelectionState();
     renderGrid('player-grid', player, true);
     renderGrid('enemy-grid', enemy, false);
 
@@ -790,6 +1182,11 @@ function render() {
     updateTurnIndicator();
     updateMedaforceUI();
     updateEvasionBadges();
+    updateOverviewBar();
+
+    if (currentBattleStep === 1) renderStep1();
+    else if (currentBattleStep === 2) renderStep2();
+    else if (currentBattleStep === 3) renderStep3();
 }
 
 function renderGrid(containerId, medabot, isPlayer) {
@@ -853,21 +1250,35 @@ function renderGrid(containerId, medabot, isPlayer) {
 // 7. LÓGICA DE COMBATE E AÇÕES
 // ==========================================================================
 function handleCardClick(key, isPlayer, part) {
-    if (gameOver || !isPlayerTurn) return;
+    if (gameOver || !isPlayerTurn || !part || part.hp <= 0) return;
     playSound('click');
 
     if (isPlayer) {
         if (part.atk > 0 && part.uses > 0) {
-            selectedAttacker = key;
-            log(`⚔️ Peça de Ataque Selecionada: ${part.name} (ATK ${part.atk}).`);
+            if (selectedAttacker === key) {
+                selectedAttacker = null;
+                log(`⚔️ Seleção cancelada: ${part.name}.`);
+            } else {
+                selectedAttacker = key;
+                log(`⚔️ Peça de Ataque Selecionada: ${part.name} (ATK ${part.atk}).`);
+            }
         } else if (part.uses === 0) {
             log(`⚠️ A peça ${part.name} esgotou seus usos nesta batalha!`, 'info');
         } else {
             log(`🛡️ ${part.name} é uma peça de mobilidade/suporte.`, 'info');
         }
     } else {
-        selectedTarget = key;
-        log(`🎯 Alvo Travado: ${part.name} do Inimigo.`);
+        if (part.hp <= 0) {
+            log(`⚠️ ${part.name} já foi destruída. Escolha um alvo vivo.`, 'info');
+            return;
+        }
+        if (selectedTarget === key) {
+            selectedTarget = null;
+            log(`🎯 Alvo liberado: ${part.name}.`);
+        } else {
+            selectedTarget = key;
+            log(`🎯 Alvo Travado: ${part.name} do Inimigo.`);
+        }
     }
 
     render();
@@ -879,6 +1290,13 @@ function handleAttack() {
     const attacker = player.parts[selectedAttacker];
     const target = enemy.parts[selectedTarget];
 
+    if (!attacker || !target || attacker.hp <= 0 || target.hp <= 0) {
+        selectedAttacker = null;
+        selectedTarget = null;
+        render();
+        return;
+    }
+
     executeCombatTurn(attacker, target, player, enemy, selectedTarget, false, false);
 
     if (attacker.uses !== Infinity) {
@@ -889,7 +1307,6 @@ function handleAttack() {
     selectedTarget = null;
 
     if (!gameOver) {
-        // [BUG 2] Verificação de K.O. por atacantes ANTES do render e da troca de turno
         if (getValidAttackers(enemy).length === 0) {
             gameOver = true;
             log('🏆 O Inimigo perdeu todas as peças ofensivas! Vitória por K.O.!', 'win');
@@ -898,12 +1315,16 @@ function handleAttack() {
             return;
         }
 
-        // [UX 8] Overlay de turno do inimigo ativado antes do delay
         isPlayerTurn = false;
         setEnemyTurnOverlay(true);
+        setBattleStep(4);
+        const theaterTitle = document.getElementById('enemy-step-title');
+        const theaterNarrative = document.getElementById('enemy-action-narrative');
+        if (theaterTitle) theaterTitle.textContent = 'Oponente está calculando resposta...';
+        if (theaterNarrative) theaterNarrative.textContent = 'Aguarde enquanto a inteligência artificial do Medabot inimigo seleciona sua tática...';
         render();
         log('Aguardando resposta do oponente...', 'info');
-        setTimeout(enemyTurn, 1100);
+        setTimeout(enemyTurn, 1200);
     } else {
         render();
     }
@@ -913,18 +1334,22 @@ function handleMedaforceSpecial() {
     if (!isPlayerTurn || gameOver || playerMedaforce < 100 || !selectedTarget) return;
 
     const target = enemy.parts[selectedTarget];
+    if (!target || target.hp <= 0) {
+        selectedTarget = null;
+        render();
+        return;
+    }
+
     playerMedaforce = 0;
     battleStats.medaforceUsed++;
 
     log(`⚡ MEDAFORCE ATIVADO! ${player.name} usou ${player.medaforce.name}!`, 'special');
     playSound('medaforceBlast');
 
-    // Medaforce deal guaranteed damage
     const mfDamage = player.medaforce.damage;
     target.hp = Math.max(0, target.hp - mfDamage);
     battleStats.damageDealt += mfDamage;
 
-    // Trigger visual floating dmg
     showDamageVisual('enemy-grid', selectedTarget, mfDamage, true, false);
 
     if (player.medaforce.healAll) {
@@ -948,12 +1373,19 @@ function handleMedaforceSpecial() {
 
     selectedAttacker = null;
     selectedTarget = null;
-    render();
 
     if (!gameOver) {
         isPlayerTurn = false;
+        setEnemyTurnOverlay(true);
+        setBattleStep(4);
+        const theaterTitle = document.getElementById('enemy-step-title');
+        const theaterNarrative = document.getElementById('enemy-action-narrative');
+        if (theaterTitle) theaterTitle.textContent = 'Oponente está calculando resposta...';
+        if (theaterNarrative) theaterNarrative.textContent = 'Aguarde enquanto a inteligência artificial do Medabot inimigo seleciona sua tática...';
         render();
-        setTimeout(enemyTurn, 1000);
+        setTimeout(enemyTurn, 1200);
+    } else {
+        render();
     }
 }
 
@@ -979,14 +1411,20 @@ function handleRepair() {
     playSound('repair');
 
     log(`🛠️ Reparo de Emergência! Restaurou +${healAmount} HP da ${targetPart.name}.`, 'win');
+    showToast(`🛠️ Reparo restaurou +${healAmount} HP na ${targetPart.name}!`, '🛠️');
 
     selectedAttacker = null;
     selectedTarget = null;
-    render();
 
     isPlayerTurn = false;
+    setEnemyTurnOverlay(true);
+    setBattleStep(4);
+    const theaterTitle = document.getElementById('enemy-step-title');
+    const theaterNarrative = document.getElementById('enemy-action-narrative');
+    if (theaterTitle) theaterTitle.textContent = 'Oponente está calculando resposta...';
+    if (theaterNarrative) theaterNarrative.textContent = 'Aguarde enquanto a inteligência artificial do Medabot inimigo seleciona sua tática...';
     render();
-    setTimeout(enemyTurn, 1000);
+    setTimeout(enemyTurn, 1200);
 }
 
 // ==========================================================================
@@ -1151,6 +1589,9 @@ function enemyTurn() {
     }
     battleStats.turns++;
 
+    const theaterTitle = document.getElementById('enemy-step-title');
+    const theaterNarrative = document.getElementById('enemy-action-narrative');
+
     // [BALANCE 6] Reparo da IA considera cabeça E braços de ataque
     if ((gameDifficulty === 'hard' || gameDifficulty === 'normal') && !enemyRepairUsed) {
         // Prioridade: cabeça (crítica ≤40%), depois braço mais danificado com ATK
@@ -1170,9 +1611,21 @@ function enemyTurn() {
             enemyRepairUsed = true;
             playSound('repair');
             log(`🛠️ O Inimigo usou Reparo de Emergência na ${urgentPart.name}! (+${healAmount} HP)`, 'lose');
+            
+            if (theaterTitle) theaterTitle.textContent = '🛠️ Reparo de Emergência do Oponente!';
+            if (theaterNarrative) theaterNarrative.textContent = `${enemy.name} usou Reparo de Emergência e restaurou +${healAmount} HP na ${urgentPart.name}!`;
+            narrate(`${enemy.name} usou Reparo de Emergência e restaurou ${healAmount} de vida na ${urgentPart.name}.`);
+
             setEnemyTurnOverlay(false);
-            isPlayerTurn = true;
             render();
+
+            setTimeout(() => {
+                if (!gameOver) {
+                    isPlayerTurn = true;
+                    setBattleStep(1);
+                    render();
+                }
+            }, 2000);
             return;
         }
     }
@@ -1187,6 +1640,10 @@ function enemyTurn() {
 
         log(`⚡ ALERTA! ${enemy.name} ativou o Especial ${enemy.medaforce.name}!`, 'special');
         playSound('medaforceBlast');
+
+        if (theaterTitle) theaterTitle.textContent = `⚡ MEDAFORCE: ${enemy.medaforce.name}!`;
+        if (theaterNarrative) theaterNarrative.textContent = `ALERTA! ${enemy.name} ativou o Especial ${enemy.medaforce.name} contra sua ${target.name}!`;
+        narrate(`Alerta! ${enemy.name} ativou o Especial Medaforce ${enemy.medaforce.name}!`);
 
         // Pseudo-peça do Medaforce para reutilizar executeCombatTurn
         const mfPseudoPart = {
@@ -1212,14 +1669,18 @@ function enemyTurn() {
         }
 
         if (!gameOver) {
-            // [BUG 3] Verificar empate após Medaforce
             checkDrawCondition();
         }
 
         if (!gameOver) {
-            setEnemyTurnOverlay(false);
-            isPlayerTurn = true;
-            render();
+            setTimeout(() => {
+                if (!gameOver) {
+                    setEnemyTurnOverlay(false);
+                    isPlayerTurn = true;
+                    setBattleStep(1);
+                    render();
+                }
+            }, 2200);
         }
         return;
     }
@@ -1230,6 +1691,7 @@ function enemyTurn() {
     if (validAttackers.length === 0 || validTargets.length === 0) {
         setEnemyTurnOverlay(false);
         isPlayerTurn = true;
+        setBattleStep(1);
         render();
         return;
     }
@@ -1268,7 +1730,6 @@ function enemyTurn() {
             attackerKey = validAttackers[0];
         }
     } else {
-        // [GAMEPLAY 7] Normal: agora prioriza o atacante mais forte (antes era aleatório)
         if (validTargets.includes('head') && Math.random() < 0.45) {
             targetKey = 'head';
         } else {
@@ -1276,7 +1737,6 @@ function enemyTurn() {
             targetKey = validTargets[0];
         }
 
-        // Escolhe o atacante mais forte com 60% de chance; aleatório nos outros 40%
         validAttackers.sort((a, b) => enemy.parts[b].atk - enemy.parts[a].atk);
         if (Math.random() < 0.6) {
             attackerKey = validAttackers[0];
@@ -1288,6 +1748,10 @@ function enemyTurn() {
     const attacker = enemy.parts[attackerKey];
     const target = player.parts[targetKey];
 
+    if (theaterTitle) theaterTitle.textContent = `${enemy.name} Desferiu um Ataque!`;
+    if (theaterNarrative) theaterNarrative.textContent = `👾 ${enemy.name} atacou sua ${target.name} usando ${attacker.name}!`;
+    narrate(`${enemy.name} atacou com ${attacker.name} na sua ${target.name}.`);
+
     executeCombatTurn(attacker, target, enemy, player, targetKey, true, false);
 
     if (attacker.uses !== Infinity) {
@@ -1295,10 +1759,8 @@ function enemyTurn() {
     }
 
     if (!gameOver) {
-        // [BUG 2 + BUG 3] Verifica K.O. por atacantes e empate
         if (getValidAttackers(player).length === 0) {
             if (getValidAttackers(enemy).length === 0) {
-                // Empate: ambos sem atacantes
                 checkDrawCondition();
             } else {
                 gameOver = true;
@@ -1306,9 +1768,15 @@ function enemyTurn() {
                 showWinnerAlert(enemy, `${enemy.name} venceu o combate!`);
             }
         } else {
-            setEnemyTurnOverlay(false);
-            isPlayerTurn = true;
-            log('👉 Seu turno! Escolha seu ataque.', 'info');
+            setTimeout(() => {
+                if (!gameOver) {
+                    setEnemyTurnOverlay(false);
+                    isPlayerTurn = true;
+                    log('👉 Seu turno! Escolha seu ataque.', 'info');
+                    setBattleStep(1);
+                    render();
+                }
+            }, 2200);
         }
     } else {
         setEnemyTurnOverlay(false);
@@ -1320,76 +1788,206 @@ function enemyTurn() {
 // ==========================================================================
 // 10. LISTENERS E EVENTOS
 // ==========================================================================
+// 10. LISTENERS E EVENTOS DO SISTEMA ACESSÍVEL
+// ==========================================================================
 function initGame() {
     hideWinnerAlert();
     showMainMenu();
 }
 
-// Botões de Ação de Combate
-document.getElementById('attack-btn').addEventListener('click', handleAttack);
-document.getElementById('medaforce-btn').addEventListener('click', handleMedaforceSpecial);
-document.getElementById('repair-btn').addEventListener('click', handleRepair);
-document.getElementById('reset-btn').addEventListener('click', () => {
-    hideWinnerAlert();
-    showSelectionScreen();
-});
-document.getElementById('play-again-btn').addEventListener('click', () => {
-    hideWinnerAlert();
-    showSelectionScreen();
-});
-
-// Botões de Navegação para o Menu Principal
-const menuNavBtn = document.getElementById('menu-nav-btn');
-if (menuNavBtn) {
-    menuNavBtn.addEventListener('click', showMainMenu);
+// Botões das Etapas Acessíveis (Step 2)
+const step2AttackBtn = document.getElementById('btn-step2-attack');
+if (step2AttackBtn) {
+    step2AttackBtn.addEventListener('click', () => {
+        playSound('click');
+        setBattleStep(3);
+    });
 }
+
+const step2RepairBtn = document.getElementById('btn-step2-repair');
+if (step2RepairBtn) {
+    step2RepairBtn.addEventListener('click', handleRepair);
+}
+
+const step2MedaforceBtn = document.getElementById('btn-step2-medaforce');
+if (step2MedaforceBtn) {
+    step2MedaforceBtn.addEventListener('click', handleMedaforceSpecial);
+}
+
+const step2ChangeTargetBtn = document.getElementById('btn-step2-change-target');
+if (step2ChangeTargetBtn) {
+    step2ChangeTargetBtn.addEventListener('click', () => {
+        playSound('click');
+        setBattleStep(1);
+    });
+}
+
+const step2MenuBtn = document.getElementById('btn-step2-menu');
+if (step2MenuBtn) {
+    step2MenuBtn.addEventListener('click', showMainMenu);
+}
+
+// Botões das Etapas Acessíveis (Step 3)
+const executeStrikeBtn = document.getElementById('btn-execute-strike');
+if (executeStrikeBtn) {
+    executeStrikeBtn.addEventListener('click', handleAttack);
+}
+
+const step3BackBtn = document.getElementById('btn-step3-back');
+if (step3BackBtn) {
+    step3BackBtn.addEventListener('click', () => {
+        playSound('click');
+        setBattleStep(2);
+    });
+}
+
+// Breadcrumbs Interativos
+const breadcrumb1 = document.getElementById('breadcrumb-step-1');
+if (breadcrumb1) {
+    breadcrumb1.addEventListener('click', () => {
+        if (!gameOver && isPlayerTurn) {
+            playSound('click');
+            setBattleStep(1);
+        }
+    });
+}
+
+const breadcrumb2 = document.getElementById('breadcrumb-step-2');
+if (breadcrumb2) {
+    breadcrumb2.addEventListener('click', () => {
+        if (!gameOver && isPlayerTurn && selectedTarget) {
+            playSound('click');
+            setBattleStep(2);
+        }
+    });
+}
+
+const breadcrumb3 = document.getElementById('breadcrumb-step-3');
+if (breadcrumb3) {
+    breadcrumb3.addEventListener('click', () => {
+        if (!gameOver && isPlayerTurn && selectedTarget) {
+            playSound('click');
+            setBattleStep(3);
+        }
+    });
+}
+
+// Modal de Diagnóstico Completo dos Robôs
+const viewFullRobotsBtn = document.getElementById('view-full-robots-btn');
+const fullRobotModal = document.getElementById('full-robot-modal');
+const closeFullRobotBtn = document.getElementById('close-full-robot-btn');
+const closeFullRobotBtnBottom = document.getElementById('close-full-robot-btn-bottom');
+
+if (viewFullRobotsBtn && fullRobotModal) {
+    viewFullRobotsBtn.addEventListener('click', () => {
+        playSound('click');
+        renderGrid('player-grid', player, true);
+        renderGrid('enemy-grid', enemy, false);
+        fullRobotModal.hidden = false;
+    });
+}
+
+if (closeFullRobotBtn && fullRobotModal) {
+    closeFullRobotBtn.addEventListener('click', () => {
+        playSound('click');
+        fullRobotModal.hidden = true;
+    });
+}
+
+if (closeFullRobotBtnBottom && fullRobotModal) {
+    closeFullRobotBtnBottom.addEventListener('click', () => {
+        playSound('click');
+        fullRobotModal.hidden = true;
+    });
+}
+
+// Toolbar de Acessibilidade (Voz, Contraste, Terminal)
+const voiceToggleBtn = document.getElementById('voice-toggle-btn');
+if (voiceToggleBtn) {
+    voiceToggleBtn.addEventListener('click', toggleVoiceNarration);
+}
+
+const contrastToggleBtn = document.getElementById('contrast-toggle-btn');
+if (contrastToggleBtn) {
+    contrastToggleBtn.addEventListener('click', toggleHighContrast);
+}
+
+const logToggleBtn = document.getElementById('log-toggle-btn');
+const battleLogDrawer = document.getElementById('battle-log-drawer');
+const closeLogDrawerBtn = document.getElementById('close-log-drawer-btn');
+
+if (logToggleBtn && battleLogDrawer) {
+    logToggleBtn.addEventListener('click', () => {
+        playSound('click');
+        battleLogDrawer.hidden = !battleLogDrawer.hidden;
+    });
+}
+
+if (closeLogDrawerBtn && battleLogDrawer) {
+    closeLogDrawerBtn.addEventListener('click', () => {
+        playSound('click');
+        battleLogDrawer.hidden = true;
+    });
+}
+
+// Botões Legados / Ações Secundárias
+const attackBtn = document.getElementById('attack-btn');
+if (attackBtn) attackBtn.addEventListener('click', handleAttack);
+
+const mfBtnLegacy = document.getElementById('medaforce-btn');
+if (mfBtnLegacy) mfBtnLegacy.addEventListener('click', handleMedaforceSpecial);
+
+const repairBtnLegacy = document.getElementById('repair-btn');
+if (repairBtnLegacy) repairBtnLegacy.addEventListener('click', handleRepair);
+
+const resetBtn = document.getElementById('reset-btn');
+if (resetBtn) {
+    resetBtn.addEventListener('click', () => {
+        hideWinnerAlert();
+        showSelectionScreen();
+    });
+}
+
+const playAgainBtn = document.getElementById('play-again-btn');
+if (playAgainBtn) {
+    playAgainBtn.addEventListener('click', () => {
+        hideWinnerAlert();
+        showSelectionScreen();
+    });
+}
+
+// Navegação para Menu
+const menuNavBtn = document.getElementById('menu-nav-btn');
+if (menuNavBtn) menuNavBtn.addEventListener('click', showMainMenu);
 
 const backToMenuBtn = document.getElementById('back-to-menu-btn');
-if (backToMenuBtn) {
-    backToMenuBtn.addEventListener('click', showMainMenu);
-}
+if (backToMenuBtn) backToMenuBtn.addEventListener('click', showMainMenu);
 
 const inGameMenuBtn = document.getElementById('in-game-menu-btn');
-if (inGameMenuBtn) {
-    inGameMenuBtn.addEventListener('click', showMainMenu);
-}
+if (inGameMenuBtn) inGameMenuBtn.addEventListener('click', showMainMenu);
 
 const winnerMenuBtn = document.getElementById('winner-menu-btn');
-if (winnerMenuBtn) {
-    winnerMenuBtn.addEventListener('click', showMainMenu);
-}
+if (winnerMenuBtn) winnerMenuBtn.addEventListener('click', showMainMenu);
 
-// 5 Opções do Menu Principal
+// Menu Principal
 const quickGameBtn = document.getElementById('btn-menu-quick-game');
-if (quickGameBtn) {
-    quickGameBtn.addEventListener('click', openQuickGame);
-}
+if (quickGameBtn) quickGameBtn.addEventListener('click', openQuickGame);
 
 const loginBtn = document.getElementById('btn-menu-login');
-if (loginBtn) {
-    loginBtn.addEventListener('click', () => openFeaturePreview('login'));
-}
+if (loginBtn) loginBtn.addEventListener('click', () => openFeaturePreview('login'));
 
 const customizeBtn = document.getElementById('btn-menu-customize');
-if (customizeBtn) {
-    customizeBtn.addEventListener('click', () => openFeaturePreview('customize'));
-}
+if (customizeBtn) customizeBtn.addEventListener('click', () => openFeaturePreview('customize'));
 
 const shopBtn = document.getElementById('btn-menu-shop');
-if (shopBtn) {
-    shopBtn.addEventListener('click', () => openFeaturePreview('shop'));
-}
+if (shopBtn) shopBtn.addEventListener('click', () => openFeaturePreview('shop'));
 
 const tournamentBtn = document.getElementById('btn-menu-tournament');
-if (tournamentBtn) {
-    tournamentBtn.addEventListener('click', () => openFeaturePreview('tournament'));
-}
+if (tournamentBtn) tournamentBtn.addEventListener('click', () => openFeaturePreview('tournament'));
 
 // Modal de Prévia de Recursos Futuros
 const featureCloseBtn = document.getElementById('feature-close-btn');
-if (featureCloseBtn) {
-    featureCloseBtn.addEventListener('click', closeFeaturePreview);
-}
+if (featureCloseBtn) featureCloseBtn.addEventListener('click', closeFeaturePreview);
 
 const featureNotifyBtn = document.getElementById('feature-notify-btn');
 if (featureNotifyBtn) {
@@ -1401,14 +1999,10 @@ if (featureNotifyBtn) {
 
 // Terminal e Áudio
 const clearLogBtn = document.getElementById('clear-log-btn');
-if (clearLogBtn) {
-    clearLogBtn.addEventListener('click', clearLog);
-}
+if (clearLogBtn) clearLogBtn.addEventListener('click', clearLog);
 
 const soundToggleBtn = document.getElementById('sound-toggle-btn');
-if (soundToggleBtn) {
-    soundToggleBtn.addEventListener('click', toggleAudio);
-}
+if (soundToggleBtn) soundToggleBtn.addEventListener('click', toggleAudio);
 
 // Seletor de Dificuldade da IA
 document.querySelectorAll('.diff-btn').forEach(btn => {
@@ -1422,6 +2016,87 @@ document.querySelectorAll('.diff-btn').forEach(btn => {
         gameDifficulty = e.target.dataset.diff;
         playSound('click');
     });
+});
+
+// ==========================================================================
+// 11. SISTEMA DE TECLAS DE ATALHO ACESSÍVEIS (TECLADO 1-4, ENTER, ESC)
+// ==========================================================================
+window.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+
+    // Modais e Overlays
+    const fullRobot = document.getElementById('full-robot-modal');
+    if (fullRobot && !fullRobot.hidden) {
+        if (e.key === 'Escape') {
+            fullRobot.hidden = true;
+            playSound('click');
+        }
+        return;
+    }
+
+    const drawer = document.getElementById('battle-log-drawer');
+    if (drawer && !drawer.hidden && e.key === 'Escape') {
+        drawer.hidden = true;
+        playSound('click');
+        return;
+    }
+
+    const featureModal = document.getElementById('feature-preview-modal');
+    if (featureModal && !featureModal.hidden) {
+        if (e.key === 'Escape') closeFeaturePreview();
+        return;
+    }
+
+    const winnerAlert = document.getElementById('winner-alert');
+    if (winnerAlert && !winnerAlert.hidden) {
+        if (e.key === 'Enter') showSelectionScreen();
+        else if (e.key === 'Escape') showMainMenu();
+        return;
+    }
+
+    const mainMenu = document.getElementById('main-menu-screen');
+    const selScreen = document.getElementById('selection-screen');
+    if ((mainMenu && !mainMenu.hidden) || (selScreen && !selScreen.hidden)) return;
+
+    if (!isPlayerTurn || gameOver) return;
+
+    // Etapa 1: Qual parte devo atacar?
+    if (currentBattleStep === 1) {
+        if (e.key === '1') selectTargetByKey('head');
+        else if (e.key === '2') selectTargetByKey('leftArm');
+        else if (e.key === '3') selectTargetByKey('rightArm');
+        else if (e.key === '4') selectTargetByKey('legs');
+    }
+    // Etapa 2: Confirmação com ataque ou reparo / ou menu / selecionar alvo
+    else if (currentBattleStep === 2) {
+        if (e.key === '1' || e.key === 'Enter') {
+            playSound('click');
+            setBattleStep(3);
+        } else if (e.key === '2') {
+            const rBtn = document.getElementById('btn-step2-repair');
+            if (rBtn && !rBtn.disabled) handleRepair();
+        } else if (e.key === '3') {
+            const mBtn = document.getElementById('btn-step2-medaforce');
+            if (mBtn && !mBtn.disabled) handleMedaforceSpecial();
+        } else if (e.key === '4') {
+            playSound('click');
+            setBattleStep(1);
+        } else if (e.key === 'Escape') {
+            showMainMenu();
+        }
+    }
+    // Etapa 3: Qual parte você usará para atacar?
+    else if (currentBattleStep === 3) {
+        if (e.key === '1') selectAttackerByKey('head');
+        else if (e.key === '2') selectAttackerByKey('leftArm');
+        else if (e.key === '3') selectAttackerByKey('rightArm');
+        else if (e.key === 'Enter') {
+            if (selectedAttacker) handleAttack();
+        } else if (e.key === 'Escape' || e.key === 'Backspace') {
+            playSound('click');
+            setBattleStep(2);
+        }
+    }
 });
 
 // Inicialização da aplicação

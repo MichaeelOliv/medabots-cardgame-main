@@ -4,12 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <meta name="description" content="Medabots Card Game - Simulador oficial de combate tático Robottle com Medaforce e peças customizáveis.">
+    <meta name="description"
+        content="Medabots Card Game - Simulador oficial de combate tático Robottle com Medaforce e peças customizáveis.">
     <title>Medabots Robottle — Card Game Arena</title>
     <!-- Google Fonts Sci-Fi & Modern UI -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Space+Grotesk:wght@400;500;700&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 
@@ -28,27 +31,58 @@
             <h1 class="game-title">ROBOTTLE <span class="highlight">MEDABOTS</span></h1>
         </div>
         <div class="header-right">
+            <button id="voice-toggle-btn" class="icon-btn" title="Alternar Narração por Voz Acessível"
+                aria-label="Alternar Narração por Voz" aria-pressed="false">
+                <span id="voice-icon">🗣️</span>
+            </button>
+            <button id="contrast-toggle-btn" class="icon-btn" title="Alternar Modo Alto Contraste"
+                aria-label="Alternar Modo Alto Contraste" aria-pressed="false">
+                <span id="contrast-icon">👁️</span>
+            </button>
+            <button id="log-toggle-btn" class="icon-btn" title="Ver Histórico de Combate"
+                aria-label="Ver Histórico de Combate">
+                <span>📜</span>
+            </button>
             <button id="sound-toggle-btn" class="icon-btn" title="Alternar Som" aria-label="Alternar Som">
                 <span id="sound-icon">🔊</span>
             </button>
         </div>
     </header>
 
-    <!-- INDICADOR DE TURNO -->
+    <!-- INDICADOR DE TURNO E BREADCRUMBS DAS ETAPAS ACESSÍVEIS -->
     <div class="status-ribbon" id="status-ribbon">
         <div id="turn-indicator" class="turn-indicator player">
             <span class="turn-dot"></span>
             <span id="turn-text">Seu Turno</span>
         </div>
+
+        <nav class="step-breadcrumbs" id="battle-breadcrumbs" aria-label="Progresso das Etapas do Turno">
+            <button class="step-pill active" id="breadcrumb-step-1" data-step="1" aria-current="step">
+                <span class="pill-num">1</span>
+                <span class="pill-title">Alvo Inimigo</span>
+            </button>
+            <span class="step-arrow" aria-hidden="true">→</span>
+            <button class="step-pill" id="breadcrumb-step-2" data-step="2">
+                <span class="pill-num">2</span>
+                <span class="pill-title">Ação / Menu</span>
+            </button>
+            <span class="step-arrow" aria-hidden="true">→</span>
+            <button class="step-pill" id="breadcrumb-step-3" data-step="3">
+                <span class="pill-num">3</span>
+                <span class="pill-title">Sua Arma</span>
+            </button>
+        </nav>
     </div>
 
     <!-- TELA DO MENU PRINCIPAL (5 OPÇÕES) -->
-    <div id="main-menu-screen" class="main-menu-screen" role="dialog" aria-modal="true" aria-labelledby="main-menu-title">
+    <div id="main-menu-screen" class="main-menu-screen" role="dialog" aria-modal="true"
+        aria-labelledby="main-menu-title">
         <div class="main-menu-box">
             <div class="main-menu-header">
                 <div class="main-menu-badge">CENTRAL DE COMANDO MEDABOTS</div>
                 <h2 id="main-menu-title" class="main-menu-title">ESCOLHA SEU <span class="highlight">DESTINO</span></h2>
-                <p class="main-menu-subtitle">Bem-vindo, Medafighter! Selecione um dos módulos para prosseguir na arena.</p>
+                <p class="main-menu-subtitle">Bem-vindo, Medafighter! Selecione um dos módulos para prosseguir na arena.
+                </p>
             </div>
 
             <div class="menu-grid">
@@ -60,7 +94,8 @@
                     </div>
                     <div class="menu-card-body">
                         <h3 class="menu-card-title">Jogo Rápido</h3>
-                        <p class="menu-card-desc">Entre direto no combate Robottle contra IA tática sem necessidade de cadastro ou login.</p>
+                        <p class="menu-card-desc">Entre direto no combate Robottle contra IA tática sem necessidade de
+                            cadastro ou login.</p>
                     </div>
                     <div class="menu-card-action">
                         <span class="menu-action-label">Jogar Batalha</span>
@@ -76,7 +111,8 @@
                     </div>
                     <div class="menu-card-body">
                         <h3 class="menu-card-title">Login & Perfil</h3>
-                        <p class="menu-card-desc">Sincronize seu histórico na nuvem, títulos de Medafighter, insígnias e estatísticas completas.</p>
+                        <p class="menu-card-desc">Sincronize seu histórico na nuvem, títulos de Medafighter, insígnias e
+                            estatísticas completas.</p>
                     </div>
                     <div class="menu-card-action">
                         <span class="menu-action-label">Ver Detalhes</span>
@@ -92,7 +128,8 @@
                     </div>
                     <div class="menu-card-body">
                         <h3 class="menu-card-title">Edição de Medabot</h3>
-                        <p class="menu-card-desc">Oficina para customizar cabeças, braços e pernas, combinando peças e criando robôs híbridos.</p>
+                        <p class="menu-card-desc">Oficina para customizar cabeças, braços e pernas, combinando peças e
+                            criando robôs híbridos.</p>
                     </div>
                     <div class="menu-card-action">
                         <span class="menu-action-label">Ver Oficina</span>
@@ -108,7 +145,8 @@
                     </div>
                     <div class="menu-card-body">
                         <h3 class="menu-card-title">Compra de Peças</h3>
-                        <p class="menu-card-desc">Adquira peças raras, boosters de expansão, medalhas lendárias e visuais com Medacoins.</p>
+                        <p class="menu-card-desc">Adquira peças raras, boosters de expansão, medalhas lendárias e
+                            visuais com Medacoins.</p>
                     </div>
                     <div class="menu-card-action">
                         <span class="menu-action-label">Ver Cyber Loja</span>
@@ -124,7 +162,8 @@
                     </div>
                     <div class="menu-card-body">
                         <h3 class="menu-card-title">Campeonato Online</h3>
-                        <p class="menu-card-desc">Dispute torneios ranqueados em tempo real contra jogadores do mundo todo e alcance o Hall da Fama.</p>
+                        <p class="menu-card-desc">Dispute torneios ranqueados em tempo real contra jogadores do mundo
+                            todo e alcance o Hall da Fama.</p>
                     </div>
                     <div class="menu-card-action">
                         <span class="menu-action-label">Ver Torneios</span>
@@ -134,13 +173,15 @@
             </div>
 
             <div class="main-menu-footer">
-                <span class="footer-tip">💡 <strong>Dica de Medafighter:</strong> O modo <em>Jogo Rápido</em> está 100% liberado para jogar offline e sem limites!</span>
+                <span class="footer-tip">💡 <strong>Dica de Medafighter:</strong> O modo <em>Jogo Rápido</em> está 100%
+                    liberado para jogar offline e sem limites!</span>
             </div>
         </div>
     </div>
 
     <!-- MODAL DE SELEÇÃO DE MEDABOT -->
-    <div id="selection-screen" class="selection-screen" hidden role="dialog" aria-modal="true" aria-labelledby="selection-title">
+    <div id="selection-screen" class="selection-screen" hidden role="dialog" aria-modal="true"
+        aria-labelledby="selection-title">
         <div class="selection-box">
             <div class="selection-top-bar">
                 <button id="back-to-menu-btn" class="btn-back" title="Voltar ao Menu">
@@ -168,98 +209,303 @@
         </div>
     </div>
 
-    <!-- ARENA PRINCIPAL DE COMBATE -->
-    <main class="arena" id="arena-container">
-        <!-- ÁREA DO OPONENTE -->
-        <section class="side-container enemy-side" aria-label="Campo Inimigo">
-            <div class="section-badge enemy-badge">
-                <span class="badge-icon">👾</span>
-                <span id="enemy-title" class="side-name">Inimigo</span>
-                <span class="dodge-stat" id="enemy-dodge-badge" title="Taxa de Esquiva">💨 15%</span>
-            </div>
-            
-            <div class="medaforce-bar-container" title="Barra de Medaforce Inimiga">
-                <div class="medaforce-label">
-                    <span>MEDAFORCE</span>
-                    <span id="enemy-mf-val">0%</span>
+    <!-- ARENA PRINCIPAL DE COMBATE (FLUXO ACESSÍVEL EM 3 ETAPAS) -->
+    <main class="arena accessible-arena" id="arena-container">
+        <!-- BARRA DE VISÃO GERAL DOS DOIS ROBÔS (HUD SUPERIOR LIMPO) -->
+        <div class="combat-overview-bar" id="combat-overview-bar">
+            <!-- Resumo Jogador -->
+            <div class="fighter-summary player-summary">
+                <div class="fighter-meta">
+                    <span class="fighter-badge player-badge">🤖 <span id="player-title">Você</span></span>
+                    <span class="dodge-stat" id="player-dodge-badge" title="Taxa de Esquiva">💨 18%</span>
                 </div>
-                <div class="medaforce-track">
-                    <div id="enemy-mf-bar" class="medaforce-fill enemy-fill" style="width: 0%;"></div>
+                <div class="fighter-bars">
+                    <div class="mini-bar-wrap" title="HP Total do Seu Medabot">
+                        <span class="mini-bar-label">HP</span>
+                        <div class="mini-track">
+                            <div class="mini-fill hp-fill player-hp" id="overview-player-hp-bar" style="width: 100%;">
+                            </div>
+                        </div>
+                        <span class="mini-val" id="overview-player-hp-val">100%</span>
+                    </div>
+                    <div class="mini-bar-wrap" title="Sua Barra de Medaforce">
+                        <span class="mini-bar-label">MF</span>
+                        <div class="mini-track">
+                            <div class="mini-fill mf-fill" id="player-mf-bar" style="width: 0%;"></div>
+                        </div>
+                        <span class="mini-val" id="player-mf-val">0%</span>
+                    </div>
                 </div>
             </div>
 
-            <div class="medabot-grid" id="enemy-grid" role="region" aria-label="Partes do Inimigo"></div>
+            <!-- Botão Central de Status / VS -->
+            <div class="overview-center-controls">
+                <span class="vs-badge">VS</span>
+                <button id="view-full-robots-btn" class="mini-inspect-btn" title="Ver Detalhes Completos dos 2 Robôs"
+                    aria-label="Ver Detalhes Completos dos 2 Robôs">
+                    📊 Ver Robôs
+                </button>
+            </div>
 
-            <!-- [UX 8] Overlay de turno do inimigo -->
-            <div id="enemy-turn-overlay" class="enemy-turn-overlay" hidden aria-live="polite">
-                <div class="overlay-content">
-                    <span class="overlay-spinner">⚙️</span>
-                    <span class="overlay-text">Calculando resposta...</span>
+            <!-- Resumo Inimigo -->
+            <div class="fighter-summary enemy-summary">
+                <div class="fighter-meta">
+                    <span class="fighter-badge enemy-badge">👾 <span id="enemy-title">Inimigo</span></span>
+                    <span class="dodge-stat" id="enemy-dodge-badge" title="Taxa de Esquiva">💨 15%</span>
+                </div>
+                <div class="fighter-bars">
+                    <div class="mini-bar-wrap" title="HP Total do Inimigo">
+                        <span class="mini-bar-label">HP</span>
+                        <div class="mini-track">
+                            <div class="mini-fill hp-fill enemy-hp" id="overview-enemy-hp-bar" style="width: 100%;">
+                            </div>
+                        </div>
+                        <span class="mini-val" id="overview-enemy-hp-val">100%</span>
+                    </div>
+                    <div class="mini-bar-wrap" title="Barra de Medaforce Inimiga">
+                        <span class="mini-bar-label">MF</span>
+                        <div class="mini-track">
+                            <div class="mini-fill mf-fill enemy-fill" id="enemy-mf-bar" style="width: 0%;"></div>
+                        </div>
+                        <span class="mini-val" id="enemy-mf-val">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- ETAPA 1: ROBÔ ADVERSÁRIO — QUAL PARTE DEVO ATACAR?               -->
+        <!-- ================================================================= -->
+        <section id="battle-step-1" class="battle-step-view active" role="region" aria-labelledby="step-1-heading">
+            <div class="step-card-header">
+                <div class="step-tag-pill">ETAPA 1 DE 3 • MIRA NO ROBÔ ADVERSÁRIO</div>
+                <h2 id="step-1-heading" class="step-main-question">Qual parte do adversário você deseja atacar?</h2>
+                <p class="step-instruction">
+                    Selecione uma parte ativa do oponente abaixo (ou use as teclas numéricas <strong>1 a 4</strong> no
+                    teclado):
+                </p>
+            </div>
+
+            <!-- Grid Acessível das Partes do Adversário -->
+            <div class="accessible-targets-grid" id="enemy-target-grid" role="radiogroup"
+                aria-label="Partes do Inimigo para Mirar">
+                <!-- Preenchido dinamicamente via JS com Cabeça, Braço Esquerdo, Braço Direito, Pernas -->
+            </div>
+
+            <div class="step-helper-box">
+                <span class="helper-icon">💡</span>
+                <span class="helper-text">
+                    <strong>Dica Tática:</strong> Destruir a <strong>Cabeça</strong> causa K.O. imediato! Destruir as
+                    <strong>Pernas</strong> anula a esquiva do oponente (0%). Destruir os <strong>Braços</strong> impede
+                    o adversário de usar aquela arma.
+                </span>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- ETAPA 2: CONFIRMAÇÃO DO ALVO & MENU DE AÇÕES                     -->
+        <!-- ================================================================= -->
+        <section id="battle-step-2" class="battle-step-view" hidden role="region" aria-labelledby="step-2-heading">
+            <div class="step-card-header">
+                <div class="step-tag-pill">ETAPA 2 DE 3 • CONFIRMAÇÃO & MENU DE AÇÃO</div>
+                <h2 id="step-2-heading" class="step-main-question">Confirme o ataque ou escolha uma opção:</h2>
+                <p class="step-instruction">
+                    Você mirou em uma parte do adversário. Escolha o que deseja fazer a seguir:
+                </p>
+            </div>
+
+            <!-- Card de Confirmação do Alvo Escolhido -->
+            <div class="target-confirmation-card" id="target-confirmation-card">
+                <!-- Preenchido via JS com imagem da parte do oponente, HP atual, tipo e dicas -->
+            </div>
+
+            <!-- Menu de Ações em Lista de Botões Grandes Acessíveis -->
+            <div class="accessible-actions-menu" role="group" aria-label="Menu de Ações do Turno">
+                <!-- 1. Atacar Alvo -->
+                <button id="btn-step2-attack" class="action-card-btn primary" role="button" tabindex="0">
+                    <div class="action-card-icon-wrap">⚔️</div>
+                    <div class="action-card-texts">
+                        <div class="action-title-row">
+                            <span class="action-card-title">Atacar Alvo Selecionado</span>
+                            <span class="action-hotkey-badge">Teclar [1]</span>
+                        </div>
+                        <div class="action-card-desc">Avançar para a 3ª tela e escolher qual arma do seu robô desferirá
+                            o golpe.</div>
+                    </div>
+                    <div class="action-card-arrow">▶</div>
+                </button>
+
+                <!-- 2. Reparo de Emergência -->
+                <button id="btn-step2-repair" class="action-card-btn support" role="button" tabindex="0">
+                    <div class="action-card-icon-wrap">🛠️</div>
+                    <div class="action-card-texts">
+                        <div class="action-title-row">
+                            <span class="action-card-title">Reparo de Emergência (1x)</span>
+                            <span class="action-hotkey-badge">Teclar [2]</span>
+                        </div>
+                        <div class="action-card-desc" id="step2-repair-desc">Restaura até +22 de HP na peça mais
+                            danificada do seu Medabot.</div>
+                    </div>
+                    <span class="action-status-pill" id="step2-repair-status">DISPONÍVEL</span>
+                </button>
+
+                <!-- 3. Especial Medaforce -->
+                <button id="btn-step2-medaforce" class="action-card-btn special" role="button" tabindex="0">
+                    <div class="action-card-icon-wrap">⚡</div>
+                    <div class="action-card-texts">
+                        <div class="action-title-row">
+                            <span class="action-card-title" id="step2-medaforce-title">Medaforce Special</span>
+                            <span class="action-hotkey-badge">Teclar [3]</span>
+                        </div>
+                        <div class="action-card-desc" id="step2-medaforce-desc">Dispara o golpe supremo da Medalha
+                            diretamente no alvo (Requer 100% de Medaforce).</div>
+                    </div>
+                    <span class="action-status-pill charged-pill" id="step2-medaforce-status">0%</span>
+                </button>
+
+                <!-- 4. Trocar / Selecionar Outro Alvo -->
+                <button id="btn-step2-change-target" class="action-card-btn outline" role="button" tabindex="0">
+                    <div class="action-card-icon-wrap">🎯</div>
+                    <div class="action-card-texts">
+                        <div class="action-title-row">
+                            <span class="action-card-title">Trocar Alvo (Selecionar Outra Parte)</span>
+                            <span class="action-hotkey-badge">Teclar [4]</span>
+                        </div>
+                        <div class="action-card-desc">Voltar para a tela do oponente e mirar em outra parte do robô
+                            inimigo.</div>
+                    </div>
+                    <div class="action-card-arrow">↺</div>
+                </button>
+
+                <!-- 5. Voltar ao Menu -->
+                <button id="btn-step2-menu" class="action-card-btn secondary" role="button" tabindex="0">
+                    <div class="action-card-icon-wrap">🏠</div>
+                    <div class="action-card-texts">
+                        <div class="action-title-row">
+                            <span class="action-card-title">Menu Principal</span>
+                            <span class="action-hotkey-badge">Esc</span>
+                        </div>
+                        <div class="action-card-desc">Retornar à central de módulos e pausar o combate.</div>
+                    </div>
+                    <div class="action-card-arrow">→</div>
+                </button>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- ETAPA 3: SEU ROBÔ — QUAL PARTE VOCÊ USARÁ PARA ATACAR?           -->
+        <!-- ================================================================= -->
+        <section id="battle-step-3" class="battle-step-view" hidden role="region" aria-labelledby="step-3-heading">
+            <div class="step-card-header">
+                <div class="step-tag-pill">ETAPA 3 DE 3 • ARSENAL DO SEU ROBÔ</div>
+                <h2 id="step-3-heading" class="step-main-question">Qual parte você usará para atacar?</h2>
+                <div class="current-target-strip" id="step3-target-strip">
+                    <span>🎯 Alvo mirado:</span> <strong id="step3-target-display-name">Carregando...</strong>
+                </div>
+            </div>
+
+            <!-- Grid Acessível das Armas do Jogador -->
+            <div class="accessible-attackers-grid" id="player-attacker-grid" role="radiogroup"
+                aria-label="Suas Peças de Ataque">
+                <!-- Preenchido via JS com Cabeça, Braço Direito, Braço Esquerdo -->
+            </div>
+
+            <!-- Barra de Execução do Ataque -->
+            <div class="step-3-execution-bar">
+                <button id="btn-execute-strike" class="btn btn-strike-primary" disabled>
+                    ⚔️ SELECIONE UMA ARMA ACIMA
+                </button>
+                <button id="btn-step3-back" class="btn btn-strike-secondary">
+                    ⬅ Voltar ao Menu de Ações
+                </button>
+            </div>
+        </section>
+
+        <!-- ================================================================= -->
+        <!-- ETAPA 4: TURNO DO ADVERSÁRIO (IA RESPONDE COM VISUAL ACESSÍVEL)  -->
+        <!-- ================================================================= -->
+        <section id="battle-step-enemy" class="battle-step-view enemy-step-view" hidden role="region"
+            aria-labelledby="enemy-step-title">
+            <div class="enemy-turn-theater">
+                <div class="enemy-theater-pulse" aria-hidden="true"></div>
+                <div class="enemy-theater-badge">TURNO DO ADVERSÁRIO</div>
+                <h2 id="enemy-step-title" class="enemy-theater-title">Oponente está calculando resposta...</h2>
+                <div class="enemy-action-presentation" id="enemy-action-presentation">
+                    <div class="enemy-spinner-icon">⚙️</div>
+                    <p id="enemy-action-narrative" class="enemy-theater-narrative">
+                        Aguarde enquanto a inteligência artificial do Medabot inimigo seleciona sua tática...
+                    </p>
+                </div>
+                <div class="enemy-theater-progress">
+                    <div class="enemy-theater-bar"></div>
                 </div>
             </div>
         </section>
 
-        <!-- CONTROLES CENTRAIS / LOG -->
-        <section class="controls" aria-label="Painel de Controle e Histórico">
-            <div class="log-header">
-                <span>TERMINAL DE COMBATE</span>
-                <button id="clear-log-btn" class="mini-btn" title="Limpar terminal">Limpar</button>
-            </div>
-            
-            <div id="log" class="log-stream" role="log" aria-live="polite"></div>
-
-            <div class="actions-panel">
-                <div class="special-actions">
-                    <button id="repair-btn" class="btn btn-skill" disabled title="Restaura até +22 de HP na peça mais danificada (1 uso por partida)">
-                        🛠️ Reparo de Emergência (1x)
-                    </button>
-                    <button id="medaforce-btn" class="btn btn-medaforce" disabled title="Requer 100% de Medaforce para ativar o ataque especial da Medalha!">
-                        ⚡ MEDAFORCE SPECIAL
-                    </button>
-                </div>
-                <div class="main-actions">
-                    <button id="attack-btn" class="btn btn-attack" disabled>
-                        ⚔️ ATACAR ALVO
-                    </button>
-                    <button id="reset-btn" class="btn btn-secondary">
-                        🔄 Novo Combate
-                    </button>
-                    <button id="in-game-menu-btn" class="btn btn-secondary" title="Voltar para a Central de Módulos">
-                        🏠 Menu
-                    </button>
-                </div>
-            </div>
-        </section>
-
-        <!-- ÁREA DO JOGADOR -->
-        <section class="side-container player-side" aria-label="Campo do Jogador">
-            <div class="section-badge player-badge">
-                <span class="badge-icon">🤖</span>
-                <span id="player-title" class="side-name">Você</span>
-                <span class="dodge-stat" id="player-dodge-badge" title="Taxa de Esquiva">💨 18%</span>
-            </div>
-
-            <div class="medaforce-bar-container" title="Sua Barra de Medaforce">
-                <div class="medaforce-label">
-                    <span>MEDAFORCE</span>
-                    <span id="player-mf-val">0%</span>
-                </div>
-                <div class="medaforce-track">
-                    <div id="player-mf-bar" class="medaforce-fill player-fill" style="width: 0%;"></div>
-                </div>
-            </div>
-
-            <div class="medabot-grid" id="player-grid" role="region" aria-label="Suas Partes"></div>
-        </section>
+        <!-- ELEMENTOS DE COMPATIBILIDADE RETROATIVA (OCULTOS / INTERNOS) -->
+        <div style="display: none;" aria-hidden="true">
+            <button id="attack-btn"></button>
+            <button id="repair-btn"></button>
+            <button id="medaforce-btn"></button>
+            <button id="reset-btn"></button>
+            <button id="in-game-menu-btn"></button>
+            <div id="enemy-turn-overlay" hidden></div>
+        </div>
     </main>
 
+    <!-- MODAL ACESSÍVEL: VISUALIZAR TODOS OS DETALHES DE AMBOS OS ROBÔS -->
+    <div id="full-robot-modal" class="full-robot-modal" hidden role="dialog" aria-modal="true"
+        aria-labelledby="full-robot-modal-title">
+        <div class="full-robot-box">
+            <div class="full-robot-header">
+                <h2 id="full-robot-modal-title">DIAGNÓSTICO COMPLETO DOS MEDABOTS</h2>
+                <button id="close-full-robot-btn" class="close-modal-icon-btn"
+                    aria-label="Fechar Diagnóstico">✕</button>
+            </div>
+
+            <div class="full-robot-body">
+                <div class="robot-blueprint-column">
+                    <h3 class="blueprint-title player">🤖 SEU MEDABOT</h3>
+                    <div class="medabot-grid" id="player-grid" role="region" aria-label="Suas Peças Completas"></div>
+                </div>
+
+                <div class="robot-blueprint-column">
+                    <h3 class="blueprint-title enemy">👾 MEDABOT OPONENTE</h3>
+                    <div class="medabot-grid" id="enemy-grid" role="region" aria-label="Peças Completas do Oponente">
+                    </div>
+                </div>
+            </div>
+
+            <div class="full-robot-footer">
+                <button id="close-full-robot-btn-bottom" class="btn btn-secondary">Fechar Diagnóstico</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- GAVETA LATERAL DO TERMINAL / HISTÓRICO DE COMBATE -->
+    <aside id="battle-log-drawer" class="battle-log-drawer" hidden role="region" aria-labelledby="drawer-log-title">
+        <div class="drawer-header">
+            <div class="drawer-title-group">
+                <span>📜</span>
+                <h2 id="drawer-log-title">TERMINAL DE COMBATE</h2>
+            </div>
+            <div class="drawer-actions">
+                <button id="clear-log-btn" class="mini-btn" title="Limpar mensagens do terminal">Limpar</button>
+                <button id="close-log-drawer-btn" class="mini-btn close-btn" title="Fechar terminal">✕</button>
+            </div>
+        </div>
+        <div id="log" class="log-stream" role="log" aria-live="polite"></div>
+    </aside>
+
     <!-- MODAL DE VITÓRIA / DERROTA -->
-    <div id="winner-alert" class="winner-alert" hidden role="alertdialog" aria-modal="true" aria-labelledby="winner-alert-title">
+    <div id="winner-alert" class="winner-alert" hidden role="alertdialog" aria-modal="true"
+        aria-labelledby="winner-alert-title">
         <div class="winner-alert-box">
             <div id="winner-banner" class="winner-banner">FIM DE COMBATE</div>
             <div id="winner-alert-title" class="winner-alert-title">Vitória!</div>
             <div class="winner-medal-wrapper">
-                <img id="winner-alert-medal" class="winner-alert-medal" src="assets/metabee partes/MedalhaMetabee.jpg" alt="Medalha do Vencedor">
+                <img id="winner-alert-medal" class="winner-alert-medal" src="assets/metabee partes/MedalhaMetabee.jpg"
+                    alt="Medalha do Vencedor">
                 <div class="medal-glow"></div>
             </div>
             <p id="winner-alert-message" class="winner-alert-message"></p>
@@ -272,7 +518,8 @@
     </div>
 
     <!-- MODAL DE PRÉVIA DE FUNCIONALIDADE FUTURA (AMIGÁVEL) -->
-    <div id="feature-preview-modal" class="feature-modal" hidden role="dialog" aria-modal="true" aria-labelledby="feature-modal-title">
+    <div id="feature-preview-modal" class="feature-modal" hidden role="dialog" aria-modal="true"
+        aria-labelledby="feature-modal-title">
         <div class="feature-modal-box">
             <div class="feature-modal-header">
                 <div class="feature-badge-row">
